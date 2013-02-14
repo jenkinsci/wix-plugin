@@ -1,0 +1,7 @@
+<!--
+  This view is used to render the installed plugins page.
+-->
+<div>
+  <!--This plugin is a sample to explain how to write a Jenkins plugin.-->
+  The Windows Installer XML (WiX) is a toolset that builds Windows installation packages from XML source code.
+</div>
