@@ -69,7 +69,7 @@ public final class Toolset {
 		Toolset.listener.getLogger().println();
 		Toolset.listener.getLogger().flush();
 		// Analyze log for reported errors
-		failed = hasFailure(format, args);
+		failed = checkForErrors(format, args);
 	}
 	
 	protected static void debug(String message) {
@@ -83,10 +83,14 @@ public final class Toolset {
 		Toolset.listener.getLogger().flush();
 	}
 	
-	protected static boolean hasFailure(String format, Object ...args) {
+	protected static boolean checkForErrors(String format, Object ...args) {
 		String line = String.format(format, args);
 		line = line.toLowerCase();
 		return line.contains("error");
+	}
+	
+	public static boolean hasFailed() {
+		return failed;
 	}
 	
 	/*public static void compile(File file) throws ToolsetException {
@@ -177,15 +181,11 @@ public final class Toolset {
 		}
 	}
 	
-	public static boolean hasFailed() {
-		return failed;
-	}
-	
 	protected static void execute(final File EXECUTABLE, Object...args) {
 		try {
 			String line = null;
 			WixCommand cmd = new WixCommand(EXECUTABLE, args);
-			debug("Executing command: " + cmd.toString());
+			debug("Executing command: %s", cmd.toString());
 			Process p = Runtime.getRuntime().exec(cmd.toString());
 			BufferedReader stdout = new BufferedReader(new InputStreamReader(p.getInputStream()));
 			BufferedReader stderr = new BufferedReader(new InputStreamReader(p.getErrorStream()));
@@ -201,8 +201,6 @@ public final class Toolset {
 			stderr.close();
 			// Wait for the process to end
 			p.waitFor();
-			/*Proc proc = launcher.execute("dir", build.getEnvVars(), listener.getLogger(), build.getProject().getWorkspace());
-			int exitCode = proc.join();*/
 			int exitCode = p.exitValue();
 			log("Process finished with %d", exitCode);
 			failed = (exitCode > 0);
