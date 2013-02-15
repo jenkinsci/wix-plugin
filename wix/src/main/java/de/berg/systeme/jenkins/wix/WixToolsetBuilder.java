@@ -12,6 +12,7 @@ import hudson.util.FormValidation;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Properties;
 
 import javax.servlet.ServletException;
 
@@ -42,12 +43,14 @@ public class WixToolsetBuilder extends Builder {
 
     private final String sources;
     private final boolean markAsUnstable;
+    private final boolean compileOnly;
 
     // Fields in config.jelly must match the parameter names in the "DataBoundConstructor"
     @DataBoundConstructor
-    public WixToolsetBuilder(String sources, boolean markAsUnstable) {
+    public WixToolsetBuilder(String sources, boolean markAsUnstable, boolean compileOnly) {
         this.sources = sources;
         this.markAsUnstable = markAsUnstable;
+        this.compileOnly = compileOnly;
     }
 
     /**
@@ -64,25 +67,38 @@ public class WixToolsetBuilder extends Builder {
     public boolean hasToMarkAsUnstable() {
     	return this.markAsUnstable;
     }
+    
+    public boolean getCompileOnly() {
+    	return this.compileOnly;
+    }
 
     @Override
     public boolean perform(AbstractBuild build, Launcher launcher, BuildListener listener) {
     	// This is where you 'build' the project.
+    	Properties props = new Properties();
+    	props.setProperty("installation.path", getDescriptor().getInstPath());
+    	props.setProperty("debug", Boolean.toString(getDescriptor().getEnableDebug()));
+    	props.setProperty("compile.only", Boolean.toString(getCompileOnly()));
+    	
     	final String instPath = getDescriptor().getInstPath();
     	if (instPath == null) {
     		listener.getLogger().println("Toolset not configured.");
     		return false;
     	}
     	try {
+    		// TODO use ant style file pattern
     		//FilePath[] files = Finder.findFiles(build.getWorkspace(), getSources());
     		FilePath sourceFile = new FilePath(build.getWorkspace(), getSources());
     		listener.getLogger().println("Found file: " + sourceFile);
     		listener.getLogger().println("Initializing tools...");
-			Toolset.initialize(new File(instPath), build, launcher, listener);
+			//Toolset.initialize(new File(instPath), build, launcher, listener);
+			Toolset.initialize(props, listener);
 			listener.getLogger().println("Starting compile process...");
 			Toolset.compile(sourceFile);
-			listener.getLogger().println("Linking...");
-			Toolset.link();
+			if (!compileOnly) {
+				listener.getLogger().println("Linking...");
+				Toolset.link();
+			}
 		} catch (ToolsetException e) {
 			listener.getLogger().println(e);
 			build.setResult(hasToMarkAsUnstable() ? Result.UNSTABLE : Result.FAILURE);
@@ -121,7 +137,10 @@ public class WixToolsetBuilder extends Builder {
          * <p>
          * If you don't want fields to be persisted, use <tt>transient</tt>.
          */
+    	// Globals
         private String instPath;
+        private boolean enableDebug;
+        // Build
         private boolean markAsUnstable;
         
         public DescriptorImpl() {
@@ -166,7 +185,7 @@ public class WixToolsetBuilder extends Builder {
          * This human readable name is used in the configuration screen.
          */
         public String getDisplayName() {
-            return "Build Windows Installer";
+            return "WIX Toolset";
         }
 
         @Override
@@ -175,6 +194,7 @@ public class WixToolsetBuilder extends Builder {
             // set that to properties and call save().
             //useFrench = formData.getBoolean("useFrench");
             instPath = formData.getString("instPath");
+            enableDebug = formData.getBoolean("enableDebug");
             //markAsUnstable = formData.getBoolean("markAsUnstable"); // only global config
             // ^Can also use req.bindJSON(this, formData);
             //  (easier when there are many fields; need set* methods for this, like setUseFrench)
@@ -194,6 +214,10 @@ public class WixToolsetBuilder extends Builder {
 
         public boolean getMarkAsUnstable() {
         	return markAsUnstable;
+        }
+        
+        public boolean getEnableDebug() {
+        	return enableDebug;
         }
     }
 }

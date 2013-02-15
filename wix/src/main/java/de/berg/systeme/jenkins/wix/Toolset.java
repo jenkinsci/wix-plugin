@@ -8,6 +8,7 @@ import hudson.model.AbstractBuild;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.InputStreamReader;
+import java.util.Properties;
 
 public final class Toolset {
 	private static final String COMPILER = "candle.exe";
@@ -23,8 +24,8 @@ public final class Toolset {
 	private static File LinkerExe;
 	
 	private static boolean failed = false;
+	private static boolean debugEnabled = false;
 	
-	//private static FilePath[] sourceFiles;
 	private static FilePath sourceFile;
 	
 	public static void initialize(File instPath, BuildListener listener) 
@@ -37,6 +38,14 @@ public final class Toolset {
 				Launcher launcher, BuildListener listener) 
 	throws ToolsetException {
 		Toolset.installationPath = instPath;
+		Toolset.listener = listener;
+		doCheck();
+	}
+	
+	public static void initialize(Properties props, BuildListener listener) 
+	throws ToolsetException {
+		Toolset.installationPath = new File(props.getProperty("installation.path"));
+		Toolset.debugEnabled = Boolean.valueOf(props.getProperty("debug"));
 		Toolset.listener = listener;
 		doCheck();
 	}
@@ -77,10 +86,11 @@ public final class Toolset {
 	}
 	
 	protected static void debug(String format, Object...args) {
-		// FIXME debug muss eingeschränkt werden
-		Toolset.listener.getLogger().printf(format, args);
-		Toolset.listener.getLogger().println();
-		Toolset.listener.getLogger().flush();
+		if (Toolset.debugEnabled) {
+			Toolset.listener.getLogger().printf(format, args);
+			Toolset.listener.getLogger().println();
+			Toolset.listener.getLogger().flush();
+		}
 	}
 	
 	protected static boolean checkForErrors(String format, Object ...args) {
@@ -209,4 +219,6 @@ public final class Toolset {
 			log("Process failed: %s", e.getMessage());
 		}
 	}
+
+	
 }

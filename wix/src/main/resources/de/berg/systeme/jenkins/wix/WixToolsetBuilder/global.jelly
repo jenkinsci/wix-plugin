@@ -12,8 +12,11 @@
     so it should be straightforward to find them.
   -->
   <f:section title="Windows Installer Builder">
-    <f:entry title="${%InstallationPath}" field="instPath" description="Installation path for WiX Toolset.">
+    <f:entry title="${%InstallationPath}" field="instPath" description="${%InstallationPathDesc}">
       <f:textbox />
+    </f:entry>
+    <f:entry title="${%enableDbgMsg}" field="enableDebug">
+      <f:checkbox />
     </f:entry>
   </f:section>
 </j:jelly>

@@ -12,7 +12,10 @@
   <f:entry title="${%Sources}" field="sources">
     <f:textbox />
   </f:entry>
-  <f:entry title="${%MarkAsUnstable}" field="markAsUnstable" description="If build fails while building MSI the whole build is marked as UNSTABLE.">
-    <f:checkbox />
+  <f:entry field="markAsUnstable">
+    <f:checkbox />${%MarkAsUnstable}
+  </f:entry>
+  <f:entry field="compileOnly">
+    <f:checkbox />${%compileOnly}
   </f:entry>
 </j:jelly>
