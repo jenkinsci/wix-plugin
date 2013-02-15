@@ -1,7 +1,9 @@
 package de.berg.systeme.jenkins.wix;
 import hudson.Extension;
+import hudson.FilePath;
 import hudson.Launcher;
 import hudson.model.BuildListener;
+import hudson.model.Result;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.tasks.BuildStepDescriptor;
@@ -36,33 +38,61 @@ import org.kohsuke.stapler.StaplerRequest;
  *
  * @author Kohsuke Kawaguchi
  */
-public class WixBuilder extends Builder {
+public class WixToolsetBuilder extends Builder {
 
-    private final String name;
+    private final String sources;
+    private final boolean markAsUnstable;
 
     // Fields in config.jelly must match the parameter names in the "DataBoundConstructor"
     @DataBoundConstructor
-    public WixBuilder(String name) {
-        this.name = name;
+    public WixToolsetBuilder(String sources, boolean markAsUnstable) {
+        this.sources = sources;
+        this.markAsUnstable = markAsUnstable;
     }
 
     /**
      * We'll use this from the <tt>config.jelly</tt>.
      */
-    public String getName() {
-        return name;
+    public String getSources() {
+        return sources;
+    }
+    
+    public boolean getMarkAsUnstable() {
+        return this.markAsUnstable;
+    }
+    
+    public boolean hasToMarkAsUnstable() {
+    	return this.markAsUnstable;
     }
 
     @Override
     public boolean perform(AbstractBuild build, Launcher launcher, BuildListener listener) {
-        // This is where you 'build' the project.
-        // Since this is a dummy, we just say 'hello world' and call that a build.
-
-        // This also shows how you can consult the global configuration of the builder
-        if (getDescriptor().getUseFrench())
-            listener.getLogger().println("Bonjour, "+name+"!");
-        else
-            listener.getLogger().println("Hello, "+name+"!");
+    	// This is where you 'build' the project.
+    	final String instPath = getDescriptor().getInstPath();
+    	if (instPath == null) {
+    		listener.getLogger().println("Toolset not configured.");
+    		return false;
+    	}
+    	try {
+    		//FilePath[] files = Finder.findFiles(build.getWorkspace(), getSources());
+    		FilePath sourceFile = new FilePath(build.getWorkspace(), getSources());
+    		listener.getLogger().println("Found file: " + sourceFile);
+    		listener.getLogger().println("Initializing tools...");
+			Toolset.initialize(new File(instPath), build, launcher, listener);
+			listener.getLogger().println("Starting compile process...");
+			Toolset.compile(sourceFile);
+			listener.getLogger().println("Linking...");
+			Toolset.link();
+		} catch (ToolsetException e) {
+			listener.getLogger().println(e);
+			build.setResult(hasToMarkAsUnstable() ? Result.UNSTABLE : Result.FAILURE);
+			return true;
+		} catch (NullPointerException e) {
+			listener.getLogger().println(e.getMessage());
+			build.setResult(hasToMarkAsUnstable() ? Result.UNSTABLE : Result.FAILURE);
+			return true;
+		}
+    	build.setResult(Result.SUCCESS);
         return true;
     }
 
@@ -91,8 +121,12 @@ public class WixBuilder extends Builder {
          * <p>
          * If you don't want fields to be persisted, use <tt>transient</tt>.
          */
-        //private boolean useFrench;
         private String instPath;
+        private boolean markAsUnstable;
+        
+        public DescriptorImpl() {
+        	load();
+        }
 
         /**
          * Performs on-the-fly validation of the form field 'name'.
@@ -102,7 +136,7 @@ public class WixBuilder extends Builder {
          * @return
          *      Indicates the outcome of the validation. This is sent to the browser.
          */
-        public FormValidation doCheckName(@QueryParameter String value)
+        public FormValidation doCheckSource(@QueryParameter String value)
         throws IOException, ServletException {
             if (value.length() == 0)
                 return FormValidation.error("Please set a name");
@@ -141,6 +175,7 @@ public class WixBuilder extends Builder {
             // set that to properties and call save().
             //useFrench = formData.getBoolean("useFrench");
             instPath = formData.getString("instPath");
+            //markAsUnstable = formData.getBoolean("markAsUnstable"); // only global config
             // ^Can also use req.bindJSON(this, formData);
             //  (easier when there are many fields; need set* methods for this, like setUseFrench)
             save();
@@ -153,12 +188,12 @@ public class WixBuilder extends Builder {
          * The method name is bit awkward because global.jelly calls this method to determine
          * the initial state of the checkbox by the naming convention.
          */
-        /*public boolean getUseFrench() {
-            return useFrench;
-        }*/
-        
         public String getInstPath() {
         	return instPath;
+        }
+
+        public boolean getMarkAsUnstable() {
+        	return markAsUnstable;
         }
     }
 }
