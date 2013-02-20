@@ -1,7 +1,5 @@
 package de.berg.systeme.jenkins.wix;
 
-import hudson.FilePath;
-
 import java.io.File;
 
 /***
@@ -44,7 +42,7 @@ public class WixCommand {
 			for (Object obj : args) {
 				if (obj instanceof String) {
 					cmd = cmd + " " + obj;
-				} 
+				}
 			}
 		}
 	}
