@@ -8,7 +8,7 @@
 
   <groupId>de.berg.systeme.jenkins.wix</groupId>
   <artifactId>wix</artifactId>
-  <version>1.0-SNAPSHOT</version>
+  <version>1.0</version>
   <name>WIX Toolset Plugin</name>
   <packaging>hpi</packaging>
 
