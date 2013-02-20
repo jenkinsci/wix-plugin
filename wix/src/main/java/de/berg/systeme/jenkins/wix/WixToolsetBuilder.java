@@ -23,21 +23,13 @@ import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 
 /**
- * Sample {@link Builder}.
+ * WIXToolset {@link Builder}.
  *
  * <p>
- * When the user configures the project and enables this builder,
- * {@link DescriptorImpl#newInstance(StaplerRequest)} is invoked
- * and a new {@link HelloWorldBuilder} is created. The created
- * instance is persisted to the project configuration XML by using
- * XStream, so this allows you to use instance fields (like {@link #name})
- * to remember the configuration.
- *
+ * This {@link Builder} creates an MSI package from a given source file.
  * <p>
- * When a build is performed, the {@link #perform(AbstractBuild, Launcher, BuildListener)}
- * method will be invoked. 
  *
- * @author Kohsuke Kawaguchi
+ * @author Bjoern Berg, bjoern.berg@gmx.de
  */
 public class WixToolsetBuilder extends Builder {
 
@@ -87,11 +79,9 @@ public class WixToolsetBuilder extends Builder {
     	}
     	try {
     		// TODO use ant style file pattern
-    		//FilePath[] files = Finder.findFiles(build.getWorkspace(), getSources());
     		FilePath sourceFile = new FilePath(build.getWorkspace(), getSources());
     		listener.getLogger().println("Found file: " + sourceFile);
     		listener.getLogger().println("Initializing tools...");
-			//Toolset.initialize(new File(instPath), build, launcher, listener);
 			Toolset.initialize(props, listener);
 			listener.getLogger().println("Starting compile process...");
 			Toolset.compile(sourceFile);
@@ -161,6 +151,10 @@ public class WixToolsetBuilder extends Builder {
                 return FormValidation.error("Please set a name");
             if (value.length() < 4)
                 return FormValidation.warning("Isn't the name too short?");
+            File directory = new File(value);
+            if (!directory.exists()) {
+            	return FormValidation.error("Does not exist.");
+            }
             return FormValidation.ok();
         }
         
