@@ -82,12 +82,15 @@ public class WixToolsetBuilder extends Builder {
     		FilePath sourceFile = new FilePath(build.getWorkspace(), getSources());
     		listener.getLogger().println("Found file: " + sourceFile);
     		listener.getLogger().println("Initializing tools...");
-			Toolset.initialize(props, listener);
+			//Toolset.initialize(props, listener);
 			listener.getLogger().println("Starting compile process...");
-			Toolset.compile(sourceFile);
-			if (!compileOnly) {
+			Toolset toolset = new Toolset(props, listener);
+			toolset.compile(sourceFile);
+			if (getCompileOnly()) {
+				listener.getLogger().println("Skipping link process!");
+			} else {
 				listener.getLogger().println("Linking...");
-				Toolset.link();
+				toolset.link();
 			}
 		} catch (ToolsetException e) {
 			listener.getLogger().println(e);

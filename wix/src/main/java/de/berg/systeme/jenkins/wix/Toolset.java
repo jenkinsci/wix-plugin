@@ -14,7 +14,7 @@ import java.util.Properties;
  * <p>It is used to compile and link wsx-files in a batch mannor triggered by the {@link WixToolsetBuilder}.</p>
  * 
  * @author Björn Berg, bjoern.berg@gmx.de
- * @version 1.0
+ * @version 1.1
  *
  */
 public final class Toolset {
@@ -27,33 +27,42 @@ public final class Toolset {
 	 */
 	private static final String LINKER = "light.exe";
 	/***
-	 * Installation directory of WIX toolset.
+	 * Installation directory of WIX Toolset.
 	 */
-	private static File installationPath;
+	private File installationPath;
 	/***
 	 * Absolute path to compilers executable.
 	 */
-	private static File CompilerExe;
+	private File CompilerExe;
 	/***
 	 * Absolute path to linkers executable.
 	 */
-	private static File LinkerExe;
+	private File LinkerExe;
 	/***
 	 * Reference to {@link BuildListener}.
 	 */
-	private static BuildListener listener;
+	private BuildListener listener;
 	/***
 	 * Signal that compiling or linking has failed.
 	 */
-	private static boolean failed = false;
+	private boolean failed = false;
 	/***
 	 * Checks if debug messages are allowed.
 	 */
-	private static boolean debugEnabled = false;
+	private boolean debugEnabled = false;
 	/***
 	 * Source file for compilation. Must be the absolute path.
 	 */
-	private static FilePath sourceFile;
+	private FilePath sourceFile;
+	
+	public Toolset() throws ToolsetException {
+		this(null, null);
+	}
+	
+	public Toolset(Properties props, BuildListener listener) 
+	throws ToolsetException {
+		initialize(props, listener);
+	}
 	
 	/***
 	 * Initializes the toolset with needed properties.
@@ -61,19 +70,19 @@ public final class Toolset {
 	 * @param listener reference to {@link BuildListener} for logging.
 	 * @throws ToolsetException is thrown if configuration of the toolset fails.
 	 */
-	public static void initialize(Properties props, BuildListener listener) 
+	protected void initialize(Properties props, BuildListener listener) 
 	throws ToolsetException {
-		Toolset.installationPath = new File(props.getProperty("installation.path"));
-		Toolset.debugEnabled = Boolean.valueOf(props.getProperty("debug"));
-		Toolset.listener = listener;
-		doCheck();
+		this.installationPath = new File(props.getProperty("installation.path"));
+		this.debugEnabled = Boolean.valueOf(props.getProperty("debug"));
+		this.listener = listener;
+		this.doCheck();
 	}
 	
 	/***
 	 * Checks if the runtime environment fulfills the needed requirements.
 	 * @throws ToolsetException is thrown if compiler and linker are not available or accessible.
 	 */
-	protected static void doCheck() throws ToolsetException {
+	protected void doCheck() throws ToolsetException {
 		String sep = System.getProperty("file.separator");
 		CompilerExe = new File(installationPath + sep + COMPILER);
 		LinkerExe = new File(installationPath + sep + LINKER);
@@ -96,7 +105,7 @@ public final class Toolset {
 	 * Logs a simple message to logging instance of {@link BuildListener}.
 	 * @param message message to print.
 	 */
-	protected static void log(String message) {
+	protected void log(String message) {
 		log("%s", message);
 	}
 	
@@ -105,11 +114,11 @@ public final class Toolset {
 	 * @param format the message containing formatting symbols.
 	 * @param args arguments to replace formatting symbols.
 	 */
-	protected static void log(String format, Object ...args) {
-		if (Toolset.listener != null) {
-			Toolset.listener.getLogger().printf(format, args);
-			Toolset.listener.getLogger().println();
-			Toolset.listener.getLogger().flush();
+	protected void log(String format, Object ...args) {
+		if (this.listener != null) {
+			this.listener.getLogger().printf(format, args);
+			this.listener.getLogger().println();
+			this.listener.getLogger().flush();
 			// Analyze log for reported errors
 			failed = checkForErrors(format, args);
 		} else {
@@ -123,7 +132,7 @@ public final class Toolset {
 	 * of Jenkins.
 	 * @param message debug message.
 	 */
-	protected static void debug(String message) {
+	protected void debug(String message) {
 		debug("%s", message);
 	}
 	
@@ -134,11 +143,11 @@ public final class Toolset {
 	 * @param message debug message with formatting symbols.
 	 * @param args arguments to replace formatting symbols.
 	 */
-	protected static void debug(String format, Object...args) {
-		if (Toolset.debugEnabled) {
-			Toolset.listener.getLogger().printf(format, args);
-			Toolset.listener.getLogger().println();
-			Toolset.listener.getLogger().flush();
+	protected void debug(String format, Object...args) {
+		if (this.debugEnabled) {
+			this.listener.getLogger().printf(format, args);
+			this.listener.getLogger().println();
+			this.listener.getLogger().flush();
 		}
 	}
 	
@@ -149,7 +158,7 @@ public final class Toolset {
 	 * @param args formatting arguments or null.
 	 * @return true if message contains the word error.
 	 */
-	private static boolean checkForErrors(String format, Object ...args) {
+	private boolean checkForErrors(String format, Object ...args) {
 		String line = String.format(format, args);
 		line = line.toLowerCase();
 		return line.contains("error");
@@ -159,7 +168,7 @@ public final class Toolset {
 	 * Returns if the execution of compiler or linker has lead to a failure.
 	 * @return true if an error has occured.
 	 */
-	public static boolean hasFailed() {
+	public boolean hasFailed() {
 		return failed;
 	}
 	
@@ -168,26 +177,43 @@ public final class Toolset {
 	 * @param file source file to compile.
 	 * @throws ToolsetException throws an exception if process fails.
 	 */
-	public static void compile(FilePath file) 
+	public void compile(FilePath file) 
 	throws ToolsetException {
-		Toolset.sourceFile = file;
-		if (!Toolset.sourceFile.getRemote().endsWith(".wxs")) 
+		this.sourceFile = file;
+		if (!this.sourceFile.getRemote().endsWith(".wxs")) 
 			throw new ToolsetException("No wxs file found.");
-		String objfile = Toolset.sourceFile.getRemote().replace(".wxs", ".wsobj");
-		execute(CompilerExe, "-nologo", "-out", objfile, Toolset.sourceFile.getRemote(), "-ext WixUIExtension");
+		//String objfile = this.sourceFile.getRemote().replace(".wxs", ".wsobj");
+		String objfile = toObjectFilename(sourceFile.getRemote());
+		//execute(CompilerExe, "-nologo", "-out", "\"", objfile, "\"", this.sourceFile.getRemote(), "-ext WixUIExtension");
+		execute(CompilerExe, setDefaultParameters(objfile, sourceFile.getRemote()));
 		if (hasFailed()) throw new ToolsetException("Compiling sources failed.");
+	}
+	
+	protected synchronized static String toObjectFilename(final String sourceFile) {
+		return sourceFile.replace(".wxs", ".wixobj");
+	}
+	
+	protected synchronized static String toMsiFilename(final String sourceFile) {
+		return sourceFile.replace(".wxs", ".msi");
+	}
+	
+	protected synchronized static String setDefaultParameters(final String outfile, final String infile) {
+		return String.format("-nologo -out \"%s\" \"%s\" -ext WixUIExtension", outfile, infile);
 	}
 	
 	/***
 	 * Links the compiled object files together into an MSI file.
 	 * @throws ToolsetException throws an exception if process fails.
 	 */
-	public static void link() 
+	public void link() 
 	throws ToolsetException {
 		if (!hasFailed()) {
-			String objfile = Toolset.sourceFile.getRemote().replace(".wxs", ".wsobj");
-			String msifile = Toolset.sourceFile.getRemote().replace(".wxs", ".msi");
-			execute(LinkerExe, "-nologo", "-out", msifile, objfile, "-ext WixUIExtension");
+			//String objfile = this.sourceFile.getRemote().replace(".wxs", ".wsobj");
+			String objfile = toObjectFilename(sourceFile.getRemote());
+			//String msifile = this.sourceFile.getRemote().replace(".wxs", ".msi");
+			String msifile = toMsiFilename(this.sourceFile.getRemote()); 
+			//execute(LinkerExe, "-nologo", "-out", msifile, objfile, "-ext WixUIExtension");
+			execute(LinkerExe, setDefaultParameters(msifile, objfile));
 			if (hasFailed()) throw new ToolsetException("Linking failed.");
 		} else {
 			throw new ToolsetException("No object files found.");
@@ -200,7 +226,7 @@ public final class Toolset {
 	 * @param executable executable to call (linker or compiler)
 	 * @param args additional arguments for the executable.
 	 */
-	private static void execute(final File executable, Object...args) {
+	private void execute(final File executable, Object...args) {
 		try {
 			String line = null;
 			WixCommand cmd = new WixCommand(executable, args);
