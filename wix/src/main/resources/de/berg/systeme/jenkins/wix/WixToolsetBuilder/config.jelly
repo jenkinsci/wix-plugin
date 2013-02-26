@@ -4,18 +4,67 @@
 
     See global.jelly for a general discussion about jelly script.
   -->
-
-  <!--
-    Creates a text field that shows the value of the "name" property.
-    When submitted, it will be passed to the corresponding constructor parameter.
-  -->
+  
   <f:entry title="${%Sources}" field="sources">
     <f:textbox />
   </f:entry>
-  <f:entry field="markAsUnstable">
+   
+  <f:section title="${%Advanced Project Options}">
+  <f:advanced>
+    <f:entry field="markAsUnstable">
     <f:checkbox />${%MarkAsUnstable}
   </f:entry>
   <f:entry field="compileOnly">
     <f:checkbox />${%compileOnly}
   </f:entry>
+  <f:entry field="useUiExt">
+    <f:checkbox />${%useUiExt}
+  </f:entry>
+  <f:entry field="useUtilExt">
+    <f:checkbox />${%useUtilExt}
+  </f:entry>
+  <f:entry field="useBalExt">
+    <f:checkbox />${%useBalExt}
+  </f:entry>
+  <f:entry field="useComPlusExt">
+    <f:checkbox />${%useComPlusExt}
+  </f:entry>
+  <f:entry field="useDependencyExt">
+    <f:checkbox />${%useDependencyExt}
+  </f:entry>
+  <f:entry field="useDifxAppExt">
+    <f:checkbox />${%useDifxAppExt}
+  </f:entry>
+  <f:entry field="useDirectXExt">
+    <f:checkbox />${%useDirectXExt}
+  </f:entry>
+  <f:entry field="useFirewallExt">
+    <f:checkbox />${%useFirewallExt}
+  </f:entry>
+  <f:entry field="useGamingExt">
+    <f:checkbox />${%useGamingExt}
+  </f:entry>
+  <f:entry field="useIISExt">
+    <f:checkbox />${%useIISExt}
+  </f:entry>
+  <f:entry field="useMsmqExt">
+    <f:checkbox />${%useMsmqExt}
+  </f:entry>
+  <f:entry field="useNetfxExt">
+    <f:checkbox />${%useNetfxExt}
+  </f:entry>
+  <f:entry field="usePsExt">
+    <f:checkbox />${%usePsExt}
+  </f:entry>
+  <f:entry field="useSqlExt">
+    <f:checkbox />${%useSqlExt}
+  </f:entry>
+  <f:entry field="useTagExt">
+    <f:checkbox />${%useTagExt}
+  </f:entry>
+  <f:entry field="useVsExt">
+    <f:checkbox />${%useVsExt}
+  </f:entry>                    
+  </f:advanced>
+  </f:section>
 </j:jelly>

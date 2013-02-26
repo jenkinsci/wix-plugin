@@ -55,16 +55,35 @@ public final class Toolset {
 	 */
 	private FilePath sourceFile;
 	
+	private ToolsetSettings settings;
+	
+	/**
+	 * @deprecated use {@link #Toolset(ToolsetSettings, BuildListener)}
+	 * @throws ToolsetException
+	 */
 	public Toolset() throws ToolsetException {
-		this(null, null);
+		this((Properties)null, null);
 	}
 	
+	/**
+	 * @deprecated use {@link #Toolset(ToolsetSettings, BuildListener)}
+	 * @param props
+	 * @param listener
+	 * @throws ToolsetException
+	 */
 	public Toolset(Properties props, BuildListener listener) 
 	throws ToolsetException {
 		initialize(props, listener);
 	}
 	
+	public Toolset(ToolsetSettings properties, BuildListener listener) 
+	throws ToolsetException {
+		this.settings = properties;
+		initialize(properties, listener);
+	}
+	
 	/***
+	 * @deprecated use {@link #initialize(ToolsetSettings, BuildListener)}
 	 * Initializes the toolset with needed properties.
 	 * @param props Properties for toolsets configuration.
 	 * @param listener reference to {@link BuildListener} for logging.
@@ -74,6 +93,20 @@ public final class Toolset {
 	throws ToolsetException {
 		this.installationPath = new File(props.getProperty("installation.path"));
 		this.debugEnabled = Boolean.valueOf(props.getProperty("debug"));
+		this.listener = listener;
+		this.doCheck();
+	}
+	
+	/***
+	 * Initializes the toolset with needed properties.
+	 * @param props Properties for toolsets configuration.
+	 * @param listener reference to {@link BuildListener} for logging.
+	 * @throws ToolsetException is thrown if configuration of the toolset fails.
+	 */
+	protected void initialize(ToolsetSettings props, BuildListener listener) 
+	throws ToolsetException {
+		this.installationPath = new File(props.get(Wix.INST_PATH, ""));
+		this.debugEnabled = Boolean.valueOf(props.get(Wix.DEBUG_ENBL, false));
 		this.listener = listener;
 		this.doCheck();
 	}
@@ -198,7 +231,7 @@ public final class Toolset {
 	}
 	
 	protected synchronized static String setDefaultParameters(final String outfile, final String infile) {
-		return String.format("-nologo -out \"%s\" \"%s\" -ext WixUIExtension", outfile, infile);
+		return String.format("-nologo -out \"%s\" \"%s\"", outfile, infile);
 	}
 	
 	/***
@@ -226,10 +259,10 @@ public final class Toolset {
 	 * @param executable executable to call (linker or compiler)
 	 * @param args additional arguments for the executable.
 	 */
-	private void execute(final File executable, Object...args) {
+	private void execute(final File executable, String args) {
 		try {
 			String line = null;
-			WixCommand cmd = new WixCommand(executable, args);
+			WixCommand cmd = new WixCommand(executable, settings, args);
 			debug("Executing command: %s", cmd.toString());
 			Process p = Runtime.getRuntime().exec(cmd.toString());
 			BufferedReader stdout = new BufferedReader(new InputStreamReader(p.getInputStream()));

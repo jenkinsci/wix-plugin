@@ -11,9 +11,10 @@ import java.io.File;
  *
  */
 public class WixCommand {
-	private String cmd = null;
+	private StringBuffer cmd = new StringBuffer();
 	
 	/***
+	 * @deprecated use {@link #WixCommand(File, ToolsetSettings, String)}
 	 * Constructor for a command without any arguments.
 	 * @param executable the executable to call.
 	 */
@@ -22,6 +23,7 @@ public class WixCommand {
 	}
 	
 	/***
+	 * @deprecated use {@link #WixCommand(File, ToolsetSettings, String)}
 	 * Constructor for a command with variable arguments.
 	 * @param executable the executable to call.
 	 * @param args program arguments like switches and files.
@@ -30,20 +32,55 @@ public class WixCommand {
 		createCommand(executable, args);
 	}
 	
+	public WixCommand(File executable, ToolsetSettings settings, String params) {
+		createCommand(executable, params, settings);
+	}
+	
 	/***
+	 * @deprecated use {@link #createCommand(File, String, ToolsetSettings)}
 	 * Constructs a command with the given arguments.
 	 * @param executable the executable to call.
 	 * @param args variable program arguments.
 	 */
 	private void createCommand(File executable, Object...args) {
-		cmd = executable.getAbsolutePath();
+		cmd.append(executable.getAbsolutePath());
 		// Iterate over args if exist
 		if (args != null) {
 			for (Object obj : args) {
 				if (obj instanceof String) {
-					cmd = cmd + " " + obj;
+					cmd.append(" ");
+					cmd.append(obj);
 				}
 			}
+		}
+	}
+	
+	private void createCommand(File executable, String params, ToolsetSettings settings) {
+		cmd.append(executable.getAbsolutePath());
+		cmd.append(" ");
+		cmd.append(params);
+		appendExtension(settings, Wix.EXT_BAL);
+		appendExtension(settings, Wix.EXT_COMPLUS);
+		appendExtension(settings, Wix.EXT_DEPENDENCY);
+		appendExtension(settings, Wix.EXT_DIFXAPP);
+		appendExtension(settings, Wix.EXT_DIRECTX);
+		appendExtension(settings, Wix.EXT_FIREWALL);
+		appendExtension(settings, Wix.EXT_GAMING);
+		appendExtension(settings, Wix.EXT_IIS);
+		appendExtension(settings, Wix.EXT_MSMQ);
+		appendExtension(settings, Wix.EXT_NETFX);
+		appendExtension(settings, Wix.EXT_PS);
+		appendExtension(settings, Wix.EXT_SQL);
+		appendExtension(settings, Wix.EXT_TAG);
+		appendExtension(settings, Wix.EXT_UI);
+		appendExtension(settings, Wix.EXT_UTIL);
+		appendExtension(settings, Wix.EXT_VS);
+	}
+	
+	private void appendExtension(ToolsetSettings settings, String extension) {
+		if (settings.get(extension, false)) {
+			cmd.append(" -ext ");
+			cmd.append(extension);
 		}
 	}
 
@@ -52,6 +89,6 @@ public class WixCommand {
 	 */
 	@Override
 	public String toString() {
-		return cmd;
+		return cmd.toString();
 	}
 }

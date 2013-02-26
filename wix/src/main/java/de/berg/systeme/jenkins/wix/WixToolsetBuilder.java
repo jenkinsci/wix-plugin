@@ -34,15 +34,39 @@ import org.kohsuke.stapler.StaplerRequest;
 public class WixToolsetBuilder extends Builder {
 
     private final String sources;
-    private final boolean markAsUnstable;
-    private final boolean compileOnly;
+    private final ToolsetSettings settings;
 
     // Fields in config.jelly must match the parameter names in the "DataBoundConstructor"
     @DataBoundConstructor
-    public WixToolsetBuilder(String sources, boolean markAsUnstable, boolean compileOnly) {
-        this.sources = sources;
-        this.markAsUnstable = markAsUnstable;
-        this.compileOnly = compileOnly;
+    public WixToolsetBuilder(String sources, boolean markAsUnstable, boolean compileOnly, 
+    						 boolean useUiExt, boolean useUtilExt, boolean useBalExt, 
+    						 boolean useComPlusExt, boolean useDependencyExt, 
+    						 boolean useDifxAppExt, boolean useDirectXExt, boolean useFirewallExt, 
+    						 boolean useGamingExt, boolean useIISExt, boolean useMsmqExt, 
+    						 boolean useNetfxExt, boolean usePsExt, boolean useSqlExt, 
+    						 boolean useTagExt, boolean useVsExt) {
+    	this.sources = sources;
+    	settings = new ToolsetSettings();
+    	settings.set(Wix.MARK_UNSTABLE, markAsUnstable);
+    	settings.set(Wix.COMPILE_ONLY, compileOnly);
+    	settings.set(Wix.INST_PATH, getDescriptor().getInstPath());
+    	settings.set(Wix.DEBUG_ENBL, getDescriptor().getEnableDebug());
+    	settings.set(Wix.EXT_BAL, useBalExt);
+    	settings.set(Wix.EXT_COMPLUS, useComPlusExt);
+    	settings.set(Wix.EXT_DEPENDENCY, useDependencyExt);
+    	settings.set(Wix.EXT_DIFXAPP, useDifxAppExt);
+    	settings.set(Wix.EXT_DIRECTX, useDirectXExt);
+    	settings.set(Wix.EXT_FIREWALL, useFirewallExt);
+    	settings.set(Wix.EXT_GAMING, useGamingExt);
+    	settings.set(Wix.EXT_IIS, useIISExt);
+    	settings.set(Wix.EXT_MSMQ, useMsmqExt);
+    	settings.set(Wix.EXT_NETFX, useNetfxExt);
+    	settings.set(Wix.EXT_PS, usePsExt);
+    	settings.set(Wix.EXT_SQL, useSqlExt);
+    	settings.set(Wix.EXT_TAG, useTagExt);
+    	settings.set(Wix.EXT_UI, useUiExt);
+    	settings.set(Wix.EXT_UTIL, useUtilExt);
+    	settings.set(Wix.EXT_VS, useVsExt);
     }
 
     /**
@@ -51,28 +75,10 @@ public class WixToolsetBuilder extends Builder {
     public String getSources() {
         return sources;
     }
-    
-    public boolean getMarkAsUnstable() {
-        return this.markAsUnstable;
-    }
-    
-    public boolean hasToMarkAsUnstable() {
-    	return this.markAsUnstable;
-    }
-    
-    public boolean getCompileOnly() {
-    	return this.compileOnly;
-    }
 
     @Override
     public boolean perform(AbstractBuild build, Launcher launcher, BuildListener listener) {
-    	// This is where you 'build' the project.
-    	Properties props = new Properties();
-    	props.setProperty("installation.path", getDescriptor().getInstPath());
-    	props.setProperty("debug", Boolean.toString(getDescriptor().getEnableDebug()));
-    	props.setProperty("compile.only", Boolean.toString(getCompileOnly()));
-    	
-    	final String instPath = getDescriptor().getInstPath();
+    	final String instPath = settings.get(Wix.INST_PATH, "");
     	if (instPath == null) {
     		listener.getLogger().println("Toolset not configured.");
     		return false;
@@ -82,11 +88,10 @@ public class WixToolsetBuilder extends Builder {
     		FilePath sourceFile = new FilePath(build.getWorkspace(), getSources());
     		listener.getLogger().println("Found file: " + sourceFile);
     		listener.getLogger().println("Initializing tools...");
-			//Toolset.initialize(props, listener);
 			listener.getLogger().println("Starting compile process...");
-			Toolset toolset = new Toolset(props, listener);
+			Toolset toolset = new Toolset(settings, listener);
 			toolset.compile(sourceFile);
-			if (getCompileOnly()) {
+			if (settings.get(Wix.COMPILE_ONLY, false)) {
 				listener.getLogger().println("Skipping link process!");
 			} else {
 				listener.getLogger().println("Linking...");
@@ -94,11 +99,11 @@ public class WixToolsetBuilder extends Builder {
 			}
 		} catch (ToolsetException e) {
 			listener.getLogger().println(e);
-			build.setResult(hasToMarkAsUnstable() ? Result.UNSTABLE : Result.FAILURE);
+			build.setResult(settings.get(Wix.MARK_UNSTABLE, false) ? Result.UNSTABLE : Result.FAILURE);
 			return true;
 		} catch (NullPointerException e) {
 			listener.getLogger().println(e.getMessage());
-			build.setResult(hasToMarkAsUnstable() ? Result.UNSTABLE : Result.FAILURE);
+			build.setResult(settings.get(Wix.MARK_UNSTABLE, false) ? Result.UNSTABLE : Result.FAILURE);
 			return true;
 		}
     	build.setResult(Result.SUCCESS);

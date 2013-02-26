@@ -31,9 +31,9 @@ public class ToolsetTest {
 	@Test
 	public void testSetDefaultParameters() {
 		String cmd = Toolset.setDefaultParameters(EXP_OBJFILE, SRCFILE);
-		Assert.assertEquals("-nologo -out \"test.wixobj\" \"test.wxs\" -ext WixUIExtension", cmd);
+		Assert.assertEquals("-nologo -out \"test.wixobj\" \"test.wxs\"", cmd);
 		
 		cmd = Toolset.setDefaultParameters(EXP_MSIFILE, EXP_OBJFILE);
-		Assert.assertEquals("-nologo -out \"test.msi\" \"test.wixobj\" -ext WixUIExtension", cmd);
+		Assert.assertEquals("-nologo -out \"test.msi\" \"test.wixobj\"", cmd);
 	}
 }
