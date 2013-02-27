@@ -6,11 +6,18 @@
     <version>1.466</version><!-- which version of Jenkins is this plugin built against? -->
   </parent>
 
-  <groupId>de.berg.systeme.jenkins.wix</groupId>
+  <!-- <groupId>de.berg.systeme.jenkins.wix</groupId>  -->
   <artifactId>wix</artifactId>
   <version>1.2-SNAPSHOT</version>
   <name>WIX Toolset Plugin</name>
   <packaging>hpi</packaging>
+  
+  <licenses>    
+    <license>     
+        <name>APL license</name>      
+        <comments>All source code is under the APL license.</comments>    
+    </license>  
+  </licenses>
 
   <!-- get every artifact through repo.jenkins-ci.org, which proxies all the artifacts that we need -->
   <repositories>
@@ -29,4 +36,24 @@
   <properties>
   	<maven.skip.tests>true</maven.skip.tests>
   </properties>
+  <scm>
+  	<url>https://github.com/bergsysteme/jenkins-wix</url>
+  	<connection>scm:git:ssh://github.com/bergsysteme/jenkins-wix.git</connection>
+  	<developerConnection>scm:git:ssh://git@github.com/bergsysteme/jenkins-wix.git</developerConnection>
+  </scm>
+  <description>Builder for MSI packages depending on the Windows Installer XML toolset.</description>
+  <organization>
+  	<name>Berg Systeme</name>
+  	<url>http://www.bergsysteme.de</url>
+  </organization>
+  <url>https://github.com/bergsysteme/jenkins-wix</url>
+  
+  <developers>
+    <developer>
+      <id>rollinhand</id>
+      <name>Björn Berg</name>
+      <email>rollin.hand@gmx.de</email>
+    </developer>
+  </developers>
+  
 </project>
