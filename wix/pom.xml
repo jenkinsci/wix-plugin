@@ -37,21 +37,22 @@
   	<maven.skip.tests>true</maven.skip.tests>
   </properties>
   <scm>
-  	<url>https://github.com/bergsysteme/jenkins-wix</url>
-  	<connection>scm:git:ssh://github.com/bergsysteme/jenkins-wix.git</connection>
-  	<developerConnection>scm:git:ssh://git@github.com/bergsysteme/jenkins-wix.git</developerConnection>
+  	<url>https://github.com/jenkinsci/jenkins-wix</url>
+  	<connection>scm:git:ssh://github.com/jenkinsci/jenkins-wix.git</connection>
+  	<developerConnection>scm:git:ssh://git@github.com/jenkinsci/jenkins-wix.git</developerConnection>
   </scm>
   <description>Builder for MSI packages depending on the Windows Installer XML toolset.</description>
   <organization>
   	<name>Berg Systeme</name>
   	<url>http://www.bergsysteme.de</url>
   </organization>
-  <url>https://github.com/bergsysteme/jenkins-wix</url>
+  
+  <url>http://wiki.jenkins-ci.org/display/JENKINS/WIX+Toolset+Plugin</url>
   
   <developers>
     <developer>
       <id>rollinhand</id>
-      <name>Björn Berg</name>
+      <name>Bjoern Berg</name>
       <email>rollin.hand@gmx.de</email>
     </developer>
   </developers>
