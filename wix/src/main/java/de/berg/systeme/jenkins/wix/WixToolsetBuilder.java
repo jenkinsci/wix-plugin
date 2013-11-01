@@ -12,7 +12,6 @@ import hudson.util.FormValidation;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Properties;
 
 import javax.servlet.ServletException;
 
@@ -69,45 +68,74 @@ public class WixToolsetBuilder extends Builder {
     	settings.set(Wix.EXT_VS, useVsExt);
     }
 
-    /**
-     * We'll use this from the <tt>config.jelly</tt>.
-     */
-    public String getSources() {
-        return sources;
-    }
-
+	////////////////////////////////////////////////////////////////////////////
+	// Getters to configure the frontend and fetch the data from ToolsetSettings.
+	// Getters must match the names of boolean fields in config.jelly. 
+    /***
+	 * Helper method for reading settings by their name. If option is not found
+	 * the method always returns fals.
+	 * @param wixOption name of option. See {@link Wix} for details.
+	 * @return boolean value; false or true.
+	 */
+	protected boolean getValue(String wixOption) {
+	  return (settings != null) ? settings.get(wixOption, false) : false;
+	}
+	public boolean getMarkAsUnstable()	{ return getValue(Wix.MARK_UNSTABLE); }
+	public boolean getCompileOnly()		{ return getValue(Wix.COMPILE_ONLY); }
+	public boolean getUseUiExt()		{ return getValue(Wix.EXT_UI); } 
+	public boolean getUseUtilExt()		{ return getValue(Wix.EXT_UTIL); } 
+	public boolean getUseBalExt()		{ return getValue(Wix.EXT_BAL); } 
+	public boolean getUseComPlusExt()	{ return getValue(Wix.EXT_COMPLUS); } 
+	public boolean getUseDependencyExt(){ return getValue(Wix.EXT_DEPENDENCY); } 
+	public boolean getUseDifxAppExt()	{ return getValue(Wix.EXT_DIFXAPP); } 
+	public boolean getUseDirectXExt()	{ return getValue(Wix.EXT_DIRECTX); } 
+	public boolean getUseFirewallExt()	{ return getValue(Wix.EXT_FIREWALL); } 
+	public boolean getUseGamingExt()	{ return getValue(Wix.EXT_GAMING); } 
+	public boolean getUseIISExt()		{ return getValue(Wix.EXT_IIS); } 
+	public boolean getUseMsmqExt()		{ return getValue(Wix.EXT_MSMQ); } 
+	public boolean getUseNetfxExt()		{ return getValue(Wix.EXT_NETFX); } 
+	public boolean getUsePsExt()		{ return getValue(Wix.EXT_PS); } 
+	public boolean getUseSqlExt()		{ return getValue(Wix.EXT_SQL); } 
+	public boolean getUseTagExt()		{ return getValue(Wix.EXT_TAG); } 
+	public boolean getUseVsExt()		{ return getValue(Wix.EXT_VS); }
+	public String getSources()			{ return sources; }
+	///////////////////////// End of Getter section ////////////////////////////
+	
     @Override
     public boolean perform(AbstractBuild build, Launcher launcher, BuildListener listener) {
+		boolean performedSuccessful;
     	final String instPath = settings.get(Wix.INST_PATH, "");
-    	if (instPath == null) {
+    	if (instPath == null || "".equals(instPath)) {
     		listener.getLogger().println("Toolset not configured.");
-    		return false;
-    	}
-    	try {
-    		// TODO use ant style file pattern
-    		FilePath sourceFile = new FilePath(build.getWorkspace(), getSources());
-    		listener.getLogger().println("Found file: " + sourceFile);
-    		listener.getLogger().println("Initializing tools...");
-			listener.getLogger().println("Starting compile process...");
-			Toolset toolset = new Toolset(settings, listener);
-			toolset.compile(sourceFile);
-			if (settings.get(Wix.COMPILE_ONLY, false)) {
-				listener.getLogger().println("Skipping link process!");
-			} else {
-				listener.getLogger().println("Linking...");
-				toolset.link();
-			}
-		} catch (ToolsetException e) {
-			listener.getLogger().println(e);
-			build.setResult(settings.get(Wix.MARK_UNSTABLE, false) ? Result.UNSTABLE : Result.FAILURE);
-			return true;
-		} catch (NullPointerException e) {
-			listener.getLogger().println(e.getMessage());
-			build.setResult(settings.get(Wix.MARK_UNSTABLE, false) ? Result.UNSTABLE : Result.FAILURE);
-			return true;
-		}
-    	build.setResult(Result.SUCCESS);
-        return true;
+    		performedSuccessful = false;
+    	} else {
+		  try {
+			  // TODO use ant style file pattern
+			  FilePath sourceFile = new FilePath(build.getWorkspace(), getSources());
+			  listener.getLogger().println("Found file: " + sourceFile);
+			  listener.getLogger().println("Initializing tools...");
+			  listener.getLogger().println("Starting compile process...");
+			  Toolset toolset = new Toolset(settings, listener);
+			  toolset.compile(sourceFile);
+			  if (settings.get(Wix.COMPILE_ONLY, false)) {
+				  listener.getLogger().println("Skipping link process!");
+			  } else {
+				  listener.getLogger().println("Linking...");
+				  toolset.link();
+			  }
+			  build.setResult(Result.SUCCESS);
+			  performedSuccessful = true;
+		  } catch (ToolsetException e) {
+			  listener.getLogger().println(e);
+			  build.setResult(settings.get(Wix.MARK_UNSTABLE, false) ? Result.UNSTABLE : Result.FAILURE);
+			  performedSuccessful = true;
+		  } catch (NullPointerException e) {
+			  listener.getLogger().println(e.getMessage());
+			  build.setResult(settings.get(Wix.MARK_UNSTABLE, false) ? Result.UNSTABLE : Result.FAILURE);
+			  performedSuccessful = true;
+		  } 
+	  }
+	  return performedSuccessful;
     }
 
     // Overridden for better type safety.
@@ -119,12 +147,8 @@ public class WixToolsetBuilder extends Builder {
     }
 
     /**
-     * Descriptor for {@link HelloWorldBuilder}. Used as a singleton.
+     * Descriptor for {@link WixToolsetBuilder}. Used as a singleton.
      * The class is marked as public so that it can be accessed from views.
-     *
-     * <p>
-     * See <tt>src/main/resources/hudson/plugins/hello_world/HelloWorldBuilder/*.jelly</tt>
-     * for the actual HTML fragment for the configuration screen.
      */
     @Extension // This indicates to Jenkins that this is an implementation of an extension point.
     public static final class DescriptorImpl extends BuildStepDescriptor<Builder> {
@@ -139,7 +163,7 @@ public class WixToolsetBuilder extends Builder {
         private String instPath;
         private boolean enableDebug;
         // Build
-        private boolean markAsUnstable;
+        //private boolean markAsUnstable;
         
         public DescriptorImpl() {
         	load();
@@ -152,13 +176,17 @@ public class WixToolsetBuilder extends Builder {
          *      This parameter receives the value that the user has typed.
          * @return
          *      Indicates the outcome of the validation. This is sent to the browser.
+		 * @throws java.io.IOException
+	     * @throws javax.servlet.ServletException
          */
         public FormValidation doCheckSource(@QueryParameter String value)
         throws IOException, ServletException {
-            if (value.length() == 0)
+            if (value.length() == 0) {
                 return FormValidation.error("Please set a name");
-            if (value.length() < 4)
+			}
+            if (value.length() < 4) {
                 return FormValidation.warning("Isn't the name too short?");
+			}
             File directory = new File(value);
             if (!directory.exists()) {
             	return FormValidation.error("Does not exist.");
@@ -185,6 +213,7 @@ public class WixToolsetBuilder extends Builder {
 
         /**
          * This human readable name is used in the configuration screen.
+	     * @return 
          */
         public String getDisplayName() {
             return "WIX Toolset";
@@ -194,7 +223,6 @@ public class WixToolsetBuilder extends Builder {
         public boolean configure(StaplerRequest req, JSONObject formData) throws FormException {
             // To persist global configuration information,
             // set that to properties and call save().
-            //useFrench = formData.getBoolean("useFrench");
             instPath = formData.getString("instPath");
             enableDebug = formData.getBoolean("enableDebug");
             //markAsUnstable = formData.getBoolean("markAsUnstable"); // only global config
@@ -209,14 +237,15 @@ public class WixToolsetBuilder extends Builder {
          *
          * The method name is bit awkward because global.jelly calls this method to determine
          * the initial state of the checkbox by the naming convention.
+	     * @return 
          */
         public String getInstPath() {
         	return instPath;
         }
 
-        public boolean getMarkAsUnstable() {
+        /*public boolean getMarkAsUnstable() {
         	return markAsUnstable;
-        }
+        }*/
         
         public boolean getEnableDebug() {
         	return enableDebug;
