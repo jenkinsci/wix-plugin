@@ -12,4 +12,11 @@
                 <jetty.port>8090</jetty.port>
             </properties>
         </action>
+        <action>
+            <actionName>CUSTOM-deploy</actionName>
+            <displayName>deploy</displayName>
+            <goals>
+                <goal>deploy</goal>
+            </goals>
+        </action>
     </actions>
