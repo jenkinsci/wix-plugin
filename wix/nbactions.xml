@@ -19,4 +19,26 @@
                 <goal>deploy</goal>
             </goals>
         </action>
+        <action>
+            <actionName>CUSTOM-Rollback Release</actionName>
+            <displayName>Rollback Release</displayName>
+            <goals>
+                <goal>release:rollback</goal>
+            </goals>
+        </action>
+        <action>
+            <actionName>CUSTOM-Clean Release</actionName>
+            <displayName>Clean Release</displayName>
+            <goals>
+                <goal>release:clean</goal>
+            </goals>
+        </action>
+        <action>
+            <actionName>CUSTOM-Release Plugin</actionName>
+            <displayName>Clean Release</displayName>
+            <goals>
+                <goal>release:prepare</goal>
+                <goal>release:perform</goal>
+            </goals>
+        </action>
     </actions>
