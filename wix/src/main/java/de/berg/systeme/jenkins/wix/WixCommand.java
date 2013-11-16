@@ -6,7 +6,7 @@ import java.io.File;
  * {@link WixCommand} is a wrapper for the different tools of the WiX Toolset for
  * arranging program arguments and the files on which the tools should work.
  * 
- * @author Björn Berg, bjoern.berg@gmx.de
+ * @author Bjoern Berg, bjoern.berg@gmx.de
  * @version 1.0
  *
  */

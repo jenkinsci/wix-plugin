@@ -13,7 +13,7 @@ import java.util.Properties;
  * an exception is thrown.</p>
  * <p>It is used to compile and link wsx-files in a batch mannor triggered by the {@link WixToolsetBuilder}.</p>
  * 
- * @author Björn Berg, bjoern.berg@gmx.de
+ * @author Bjoern Berg, bjoern.berg@gmx.de
  * @version 1.1
  *
  */

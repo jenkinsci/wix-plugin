@@ -3,7 +3,7 @@ package de.berg.systeme.jenkins.wix;
 /***
  * Pre-defined keys.
  * 
- * @author Björn Berg, bjoern.berg@gmx.de
+ * @author Bjoern Berg, bjoern.berg@gmx.de
  *
  */
 public interface Wix {
