@@ -15,31 +15,33 @@ public class ToolsetSettings {
 	
 	public String get(String key, String defaultValue) {
 		String tmp = this.properties.getProperty(key);
-		if (tmp == null) return defaultValue;
-		return tmp;
+		return (tmp == null) ? defaultValue : tmp;
 	}
 	
 	public boolean get(String key, boolean defaultValue) {
-		String tmp = this.properties.getProperty(key);
-		if (tmp == null) return defaultValue;
-		try {
-			boolean rvalue = Boolean.parseBoolean(tmp);
-			return rvalue;
-		} catch (Exception e) {
-			return defaultValue;
-		}
+            boolean rvalue = defaultValue;
+            String tmp = this.properties.getProperty(key);
+            if (tmp != null) {
+                try {
+                    rvalue = Boolean.parseBoolean(tmp);
+                } catch (Exception e) {
+                    // nothing to do
+                }
+            }
+            return rvalue;
 	}
 	
 	public double get(String key, double defaultValue) {
-		String tmp = this.properties.getProperty(key);
-		if (tmp == null) return defaultValue;
-		double rvalue;
-		try {
-			rvalue = Double.parseDouble(tmp);
-			return rvalue;
-		} catch (NumberFormatException e) {
-			return defaultValue;
-		}
+            double rvalue = defaultValue;
+            String tmp = this.properties.getProperty(key);
+            if (tmp != null) {
+                try {
+                    rvalue = Double.parseDouble(tmp);
+                } catch (NumberFormatException e) {
+                    // nothing
+                }
+            }
+            return rvalue;
 	}
 	
 	public void set(String key, String value) {

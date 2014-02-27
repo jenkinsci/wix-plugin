@@ -1,12 +1,29 @@
+/*
+* This file is part of wix-plugin-jenkins.
+* 
+* Copyright (C) 2014 Berg Systeme
+* 
+* This program is free software: you can redistribute it and/or modify
+* it under the terms of the GNU Affero General Public License as published by
+* the Free Software Foundation, either version 3 of the License, or
+* (at your option) any later version.
+*
+* This program is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+* GNU General Public License for more details.
+*
+* You should have received a copy of the GNU Affero General Public License
+* along with this program. If not, see <http://www.gnu.org/licenses/>.
+*
+*/
 package de.berg.systeme.jenkins.wix;
 
+import hudson.EnvVars;
 import hudson.FilePath;
-import hudson.model.BuildListener;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.InputStreamReader;
-import java.util.Properties;
+import java.io.IOException;
 
 /***
  * <p>Toolset checks the existence for the WIX Toolset on the buildsystem. If not available
@@ -14,277 +31,200 @@ import java.util.Properties;
  * <p>It is used to compile and link wsx-files in a batch mannor triggered by the {@link WixToolsetBuilder}.</p>
  * 
  * @author Bjoern Berg, bjoern.berg@gmx.de
- * @version 1.1
+ * @version 2.0
  *
  */
 public final class Toolset {
-	/***
-	 * Name to compilers executable.
-	 */
-	private static final String COMPILER = "candle.exe";
-	/***
-	 * Name to linkers executable.
-	 */
-	private static final String LINKER = "light.exe";
-	/***
-	 * Installation directory of WIX Toolset.
-	 */
-	private File installationPath;
-	/***
-	 * Absolute path to compilers executable.
-	 */
-	private File CompilerExe;
-	/***
-	 * Absolute path to linkers executable.
-	 */
-	private File LinkerExe;
-	/***
-	 * Reference to {@link BuildListener}.
-	 */
-	private BuildListener listener;
-	/***
-	 * Signal that compiling or linking has failed.
-	 */
-	private boolean failed = false;
-	/***
-	 * Checks if debug messages are allowed.
-	 */
-	private boolean debugEnabled = false;
-	/***
-	 * Source file for compilation. Must be the absolute path.
-	 */
-	private FilePath sourceFile;
+    // Environment variables
+    private EnvVars envVars;
+    // Command for compiler
+    private WixCommand candle;
+    // Command for linker
+    private WixCommand light;
+    // Logging instance
+    private final ToolsetLogger lg = ToolsetLogger.INSTANCE;
+    // global setting
+    private final ToolsetSettings settings;
+
+    /**
+     * constructor with global settings.
+     * @param properties global settings.
+     * @throws ToolsetException 
+     */
+    public Toolset(ToolsetSettings properties) throws ToolsetException {
+        this(properties, new EnvVars());
+    }
+    
+    /**
+     * constructor with global settings and environment variables.
+     * @param properties global settings.
+     * @param vars environment variables.
+     * @throws ToolsetException 
+     */
+    public Toolset(ToolsetSettings properties, EnvVars vars) throws ToolsetException {
+        // initialize globals
+        this.settings   = properties;
+        this.envVars    = vars;
+        // initialize commands
+        this.candle     = new Candle(this.settings, this.envVars);
+        this.light      = new Light(this.settings, this.envVars);
+        // check
+        lg.log(this.candle.exists() ? "Compiler found." : "Compiler not found.");
+        lg.log(this.light.exists() ? "Linker found." : "Linker not found.");
+    }
+    
+    /**
+     * Replaces the file extension of a given file and returns a new FilePath
+     * with the new extension.
+     * @param input given file to replace extension.
+     * @param fext extension to replace (starting with .dot).
+     * @param fext_new new extension (starting with .dot).
+     * @return new FilePath.
+     */
+    private FilePath replaceExtension(FilePath input, String fext, String fext_new) {
+        String filename = input.getRemote();
+        filename = filename.replace(fext, fext_new);
+        return new FilePath(new File(filename));
+    }
+    
+    /**
+     * Checks if the file path or file is valid.
+     * @param fp file path.
+     * @param fext file extension.
+     * @return true if file path is valid.
+     */
+    private boolean isValid(FilePath fp, String fext) {
+        boolean valid = false;
+        try {
+            valid = fp.getRemote().endsWith(fext) && fp.exists();
+        } catch (IOException ex) {
+            lg.log(ex.getMessage());
+            valid = false;
+        } catch (InterruptedException ex) {
+            lg.log(ex.getMessage());
+            valid = false;
+        }
+        return valid;
+    }
 	
-	private ToolsetSettings settings;
+    /***
+     * Compiles the given source file.
+     * @param file source file to compile.
+     * @throws ToolsetException throws an exception if process fails.
+     */
+    public FilePath compile(FilePath file) throws ToolsetException, Exception {
+        FilePath[] input = {file};
+        return compile(input);
+    }
+    
+    /**
+     * Compiles a set of source files.
+     * @param input set of source files.
+     * @return compiled object file.
+     * @throws Exception
+     * @throws ToolsetException 
+     */
+    public FilePath compile(FilePath[] input) throws Exception, ToolsetException {
+        // we use the first input name for the output file name
+        FilePath output = replaceExtension(input[0], ".wxs", ".wixobj");
+        return compile(input, output);
+    }
+    
+    /**
+     * Compiles a set of source files into a given object file.
+     * @param input set of source files.
+     * @param output object file.
+     * @return object file if successful. Otherwise null.
+     * @throws Exception
+     * @throws ToolsetException 
+     */
+    public FilePath compile(FilePath[] input, FilePath output) throws Exception, ToolsetException {
+        FilePath routput = null;
+        // add every source file
+        for (FilePath fp : input) {
+            if (isValid(fp, ".wxs")) {
+                lg.debug("adding source file: %s", fp.getRemote());
+                candle.addSourceFile(fp);
+            } else {
+                lg.log("no valid source file: %s", fp.getRemote());
+            }
+        }
+        // add output file
+        candle.setOutputFile(output);
+        
+        lg.debug("Executing command: %s", candle.toString());
+        if (candle.execute()) {
+            lg.log("Compiling successful.");
+            routput = output;
+        } else {
+            lg.log("Compiling failed.");
+            throw new ToolsetException("Compiling failed.");
+        }
+        return routput;
+    }
 	
-	/**
-	 * @deprecated use {@link #Toolset(ToolsetSettings, BuildListener)}
-	 * @throws ToolsetException
-	 */
-	public Toolset() throws ToolsetException {
-		this((Properties)null, null);
-	}
-	
-	/**
-	 * @deprecated use {@link #Toolset(ToolsetSettings, BuildListener)}
-	 * @param props
-	 * @param listener
-	 * @throws ToolsetException
-	 */
-	public Toolset(Properties props, BuildListener listener) 
-	throws ToolsetException {
-		initialize(props, listener);
-	}
-	
-	public Toolset(ToolsetSettings properties, BuildListener listener) 
-	throws ToolsetException {
-		this.settings = properties;
-		initialize(properties, listener);
-	}
-	
-	/***
-	 * @deprecated use {@link #initialize(ToolsetSettings, BuildListener)}
-	 * Initializes the toolset with needed properties.
-	 * @param props Properties for toolsets configuration.
-	 * @param listener reference to {@link BuildListener} for logging.
-	 * @throws ToolsetException is thrown if configuration of the toolset fails.
-	 */
-	protected void initialize(Properties props, BuildListener listener) 
-	throws ToolsetException {
-		this.installationPath = new File(props.getProperty("installation.path"));
-		this.debugEnabled = Boolean.valueOf(props.getProperty("debug"));
-		this.listener = listener;
-		this.doCheck();
-	}
-	
-	/***
-	 * Initializes the toolset with needed properties.
-	 * @param props Properties for toolsets configuration.
-	 * @param listener reference to {@link BuildListener} for logging.
-	 * @throws ToolsetException is thrown if configuration of the toolset fails.
-	 */
-	protected void initialize(ToolsetSettings props, BuildListener listener) 
-	throws ToolsetException {
-		this.installationPath = new File(props.get(Wix.INST_PATH, ""));
-		this.debugEnabled = Boolean.valueOf(props.get(Wix.DEBUG_ENBL, false));
-		this.listener = listener;
-		this.doCheck();
-	}
-	
-	/***
-	 * Checks if the runtime environment fulfills the needed requirements.
-	 * @throws ToolsetException is thrown if compiler and linker are not available or accessible.
-	 */
-	protected void doCheck() throws ToolsetException {
-		String sep = System.getProperty("file.separator");
-		CompilerExe = new File(installationPath + sep + COMPILER);
-		LinkerExe = new File(installationPath + sep + LINKER);
-		// Check if Executables are accessible
-		if (!CompilerExe.exists()) {
-			throw new ToolsetException("No Compiler found: " + CompilerExe.getAbsolutePath());
-		}
-		if (!CompilerExe.canExecute()) {
-			throw new ToolsetException("No execution rights on " + COMPILER);
-		}
-		if (!LinkerExe.exists()) {
-			throw new ToolsetException("No linker found: " + LinkerExe.getAbsolutePath());
-		}
-		if (!LinkerExe.canExecute()) {
-			throw new ToolsetException("No execution rights on " + LINKER);
-		}
-	}
-	
-	/***
-	 * Logs a simple message to logging instance of {@link BuildListener}.
-	 * @param message message to print.
-	 */
-	protected void log(String message) {
-		log("%s", message);
-	}
-	
-	/***
-	 * Logs a formatted message to logging instance of {@link BuildListener}.
-	 * @param format the message containing formatting symbols.
-	 * @param args arguments to replace formatting symbols.
-	 */
-	protected void log(String format, Object ...args) {
-		if (this.listener != null) {
-			this.listener.getLogger().printf(format, args);
-			this.listener.getLogger().println();
-			this.listener.getLogger().flush();
-			// Analyze log for reported errors
-			failed = checkForErrors(format, args);
-		} else {
-			// what to do now?
-		}
-	}
-	
-	/***
-	 * Writes debugging messages to logging instance of {@link BuildListener}. This
-	 * is only done if debugging is globally enabled for the WIX toolset in the settings
-	 * of Jenkins.
-	 * @param message debug message.
-	 */
-	protected void debug(String message) {
-		debug("%s", message);
-	}
-	
-	/***
-	 * Writes debugging messages to logging instance of {@link BuildListener}. This
-	 * is only done if debugging is globally enabled for the WIX toolset in the settings
-	 * of Jenkins.
-	 * @param message debug message with formatting symbols.
-	 * @param args arguments to replace formatting symbols.
-	 */
-	protected void debug(String format, Object...args) {
-		if (this.debugEnabled) {
-			this.listener.getLogger().printf(format, args);
-			this.listener.getLogger().println();
-			this.listener.getLogger().flush();
-		}
-	}
-	
-	/***
-	 * Checks a given message for compiler or linker errors. This is called from
-	 * {@link #log(String)}, {@link #log(String, Object...)}.
-	 * @param format message with formatting symbols or not.
-	 * @param args formatting arguments or null.
-	 * @return true if message contains the word error.
-	 */
-	private boolean checkForErrors(String format, Object ...args) {
-		String line = String.format(format, args);
-		line = line.toLowerCase();
-		return line.contains("error");
-	}
-	
-	/***
-	 * Returns if the execution of compiler or linker has lead to a failure.
-	 * @return true if an error has occured.
-	 */
-	public boolean hasFailed() {
-		return failed;
-	}
-	
-	/***
-	 * Compiles the given source file.
-	 * @param file source file to compile.
-	 * @throws ToolsetException throws an exception if process fails.
-	 */
-	public void compile(FilePath file) 
-	throws ToolsetException {
-		this.sourceFile = file;
-		if (!this.sourceFile.getRemote().endsWith(".wxs")) 
-			throw new ToolsetException("No wxs file found.");
-		//String objfile = this.sourceFile.getRemote().replace(".wxs", ".wsobj");
-		String objfile = toObjectFilename(sourceFile.getRemote());
-		//execute(CompilerExe, "-nologo", "-out", "\"", objfile, "\"", this.sourceFile.getRemote(), "-ext WixUIExtension");
-		execute(CompilerExe, setDefaultParameters(objfile, sourceFile.getRemote()));
-		if (hasFailed()) throw new ToolsetException("Compiling sources failed.");
-	}
-	
-	protected synchronized static String toObjectFilename(final String sourceFile) {
-		return sourceFile.replace(".wxs", ".wixobj");
-	}
-	
-	protected synchronized static String toMsiFilename(final String sourceFile) {
-		return sourceFile.replace(".wxs", ".msi");
-	}
-	
-	protected synchronized static String setDefaultParameters(final String outfile, final String infile) {
-		return String.format("-nologo -out \"%s\" \"%s\"", outfile, infile);
-	}
-	
-	/***
-	 * Links the compiled object files together into an MSI file.
-	 * @throws ToolsetException throws an exception if process fails.
-	 */
-	public void link() 
-	throws ToolsetException {
-		if (!hasFailed()) {
-			//String objfile = this.sourceFile.getRemote().replace(".wxs", ".wsobj");
-			String objfile = toObjectFilename(sourceFile.getRemote());
-			//String msifile = this.sourceFile.getRemote().replace(".wxs", ".msi");
-			String msifile = toMsiFilename(this.sourceFile.getRemote()); 
-			//execute(LinkerExe, "-nologo", "-out", msifile, objfile, "-ext WixUIExtension");
-			execute(LinkerExe, setDefaultParameters(msifile, objfile));
-			if (hasFailed()) throw new ToolsetException("Linking failed.");
-		} else {
-			throw new ToolsetException("No object files found.");
-		}
-	}
-	
-	/***
-	 * Generic procedure to execute WIX Toolset executables and react on the
-	 * command line output.
-	 * @param executable executable to call (linker or compiler)
-	 * @param args additional arguments for the executable.
-	 */
-	private void execute(final File executable, String args) {
-		try {
-			String line = null;
-			WixCommand cmd = new WixCommand(executable, settings, args);
-			debug("Executing command: %s", cmd.toString());
-			Process p = Runtime.getRuntime().exec(cmd.toString());
-			BufferedReader stdout = new BufferedReader(new InputStreamReader(p.getInputStream()));
-			BufferedReader stderr = new BufferedReader(new InputStreamReader(p.getErrorStream()));
-			// Log stdout of executable
-			while ((line = stdout.readLine()) != null) {
-				log(line);
-			}
-			stdout.close();
-			// Log stderr of executable
-			while ((line = stderr.readLine()) != null) {
-			    log(line);
-			}
-			stderr.close();
-			// Wait for the process to end
-			p.waitFor();
-			int exitCode = p.exitValue();
-			debug("Process finished with %d", exitCode);
-			failed = (exitCode > 0);
-		} catch (Exception e) {
-			failed = true;
-			log("Process failed: %s", e.getMessage());
-		}
-	}
+    /***
+     * @deprecated use link(FilePath).
+     */
+    public void link() throws ToolsetException, Exception {
+        throw new UnsupportedOperationException("operation no longer supported");
+    }
+    
+    /***
+     * Links the given object file into an MSI package.
+     * @param file object file.
+     * @return MSI package file.
+     * @throws Exception
+     * @throws ToolsetException 
+     */
+    public FilePath link(FilePath file) throws Exception, ToolsetException {
+        FilePath[] input = {file};
+        return link(input);
+    }
+    
+    /**
+     * Links a set of given object files into an MSI package.
+     * @param input set of object files.
+     * @return MSI package file.
+     * @throws Exception
+     * @throws ToolsetException 
+     */
+    public FilePath link(FilePath[] input) throws Exception, ToolsetException {
+        FilePath output = replaceExtension(input[0], ".wixobj", ".msi");
+        return link(input, output);
+    }
+    
+    /**
+     * Links a set of given object files into an MSI package.
+     * @param input set of object files.
+     * @param output name of MSI package.
+     * @return MSI package file.
+     * @throws Exception
+     * @throws ToolsetException 
+     */
+    public FilePath link(FilePath[] input, FilePath output) throws Exception, ToolsetException {
+        FilePath routput = null;
+        // add every source file
+        for (FilePath fp : input) {
+            if (isValid(fp, ".wixobj")) {
+                lg.debug("adding object file: %s", fp.getRemote());
+                light.addSourceFile(fp);
+            } else {
+                lg.log("no valid object file: %s", fp.getRemote());
+            }
+        }
+        // add output file
+        light.setOutputFile(output);
+        
+        lg.debug("Executing command: %s", light.toString());
+        if (light.execute()) {
+            lg.log("Linking successful.");
+            routput = output;
+        } else {
+            lg.log("Linking failed.");
+            throw new ToolsetException("Linking failed.");
+        }
+        
+        return routput;
+    }
 }

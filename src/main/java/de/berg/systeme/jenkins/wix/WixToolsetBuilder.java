@@ -1,4 +1,25 @@
+/*
+* This file is part of wix-plugin-jenkins.
+* 
+* Copyright (C) 2014 Berg Systeme
+* 
+* This program is free software: you can redistribute it and/or modify
+* it under the terms of the GNU Affero General Public License as published by
+* the Free Software Foundation, either version 3 of the License, or
+* (at your option) any later version.
+*
+* This program is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+* GNU General Public License for more details.
+*
+* You should have received a copy of the GNU Affero General Public License
+* along with this program. If not, see <http://www.gnu.org/licenses/>.
+*
+*/
 package de.berg.systeme.jenkins.wix;
+
+import hudson.EnvVars;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
@@ -31,9 +52,9 @@ import org.kohsuke.stapler.StaplerRequest;
  * @author Bjoern Berg, bjoern.berg@gmx.de
  */
 public class WixToolsetBuilder extends Builder {
-
     private final String sources;
     private final ToolsetSettings settings;
+    private final ToolsetLogger lg = ToolsetLogger.INSTANCE;
 
     // Fields in config.jelly must match the parameter names in the "DataBoundConstructor"
     @DataBoundConstructor
@@ -71,7 +92,7 @@ public class WixToolsetBuilder extends Builder {
 	////////////////////////////////////////////////////////////////////////////
 	// Getters to configure the frontend and fetch the data from ToolsetSettings.
 	// Getters must match the names of boolean fields in config.jelly. 
-    /***
+        /***
 	 * Helper method for reading settings by their name. If option is not found
 	 * the method always returns fals.
 	 * @param wixOption name of option. See {@link Wix} for details.
@@ -86,7 +107,7 @@ public class WixToolsetBuilder extends Builder {
 	public boolean getUseUtilExt()		{ return getValue(Wix.EXT_UTIL); } 
 	public boolean getUseBalExt()		{ return getValue(Wix.EXT_BAL); } 
 	public boolean getUseComPlusExt()	{ return getValue(Wix.EXT_COMPLUS); } 
-	public boolean getUseDependencyExt(){ return getValue(Wix.EXT_DEPENDENCY); } 
+	public boolean getUseDependencyExt()    { return getValue(Wix.EXT_DEPENDENCY); } 
 	public boolean getUseDifxAppExt()	{ return getValue(Wix.EXT_DIFXAPP); } 
 	public boolean getUseDirectXExt()	{ return getValue(Wix.EXT_DIRECTX); } 
 	public boolean getUseFirewallExt()	{ return getValue(Wix.EXT_FIREWALL); } 
@@ -98,42 +119,64 @@ public class WixToolsetBuilder extends Builder {
 	public boolean getUseSqlExt()		{ return getValue(Wix.EXT_SQL); } 
 	public boolean getUseTagExt()		{ return getValue(Wix.EXT_TAG); } 
 	public boolean getUseVsExt()		{ return getValue(Wix.EXT_VS); }
-	public String getSources()			{ return sources; }
+	public String getSources()		{ return sources; }
 	///////////////////////// End of Getter section ////////////////////////////
 	
     @Override
     public boolean perform(AbstractBuild build, Launcher launcher, BuildListener listener) {
-		boolean performedSuccessful;
-    	final String instPath = settings.get(Wix.INST_PATH, "");
+	boolean performedSuccessful = false;
+    	
+        final String instPath = settings.get(Wix.INST_PATH, "");
     	if (instPath == null || "".equals(instPath)) {
     		listener.getLogger().println("Toolset not configured.");
     		performedSuccessful = false;
     	} else {
 		  try {
-			  // TODO use ant style file pattern
-			  FilePath sourceFile = new FilePath(build.getWorkspace(), getSources());
-			  listener.getLogger().println("Found file: " + sourceFile);
-			  listener.getLogger().println("Initializing tools...");
-			  listener.getLogger().println("Starting compile process...");
-			  Toolset toolset = new Toolset(settings, listener);
-			  toolset.compile(sourceFile);
-			  if (settings.get(Wix.COMPILE_ONLY, false)) {
-				  listener.getLogger().println("Skipping link process!");
-			  } else {
-				  listener.getLogger().println("Linking...");
-				  toolset.link();
-			  }
-			  build.setResult(Result.SUCCESS);
-			  performedSuccessful = true;
+                    // initialize our own logger
+                    boolean debugEnabled = Boolean.valueOf(settings.get(Wix.DEBUG_ENBL, false));
+                    ToolsetLogger.INSTANCE.init(listener.getLogger(), debugEnabled);
+                    
+                    // get all environment variables
+                    listener.getLogger().println("Detecting environment variables...");
+                    EnvVars envVars = build.getEnvironment(listener);
+                    
+                    //FilePath sourceFile = new FilePath(build.getWorkspace(), getSources());
+                    FilePath[] sources = build.getWorkspace().list(getSources());
+                    listener.getLogger().println("Found sources: " + sources.length);
+                    listener.getLogger().println("Initializing tools...");
+                    
+                    Toolset toolset = new Toolset(settings, envVars);
+                    listener.getLogger().println("Starting compile process...");
+                    FilePath objFile = toolset.compile(sources);
+                    if (settings.get(Wix.COMPILE_ONLY, false)) {
+                        listener.getLogger().println("Skipping link process!");
+                    } else {
+                        listener.getLogger().println("Linking...");
+                        toolset.link(objFile);
+                    }
+                    build.setResult(Result.SUCCESS);
+                    performedSuccessful = true;
 		  } catch (ToolsetException e) {
 			  listener.getLogger().println(e);
 			  build.setResult(settings.get(Wix.MARK_UNSTABLE, false) ? Result.UNSTABLE : Result.FAILURE);
 			  performedSuccessful = true;
 		  } catch (NullPointerException e) {
-			  listener.getLogger().println(e.getMessage());
-			  build.setResult(settings.get(Wix.MARK_UNSTABLE, false) ? Result.UNSTABLE : Result.FAILURE);
-			  performedSuccessful = true;
-		  } 
+                        listener.getLogger().println(e.getMessage());
+                        build.setResult(settings.get(Wix.MARK_UNSTABLE, false) ? Result.UNSTABLE : Result.FAILURE);
+                        performedSuccessful = true;
+		  } catch (IOException e) {
+                      listener.getLogger().println(e.getMessage());
+                      build.setResult(settings.get(Wix.MARK_UNSTABLE, false) ? Result.UNSTABLE : Result.FAILURE);
+                      performedSuccessful = false;
+                  } catch (InterruptedException e) {
+                      listener.getLogger().println(e.getMessage());
+                      build.setResult(settings.get(Wix.MARK_UNSTABLE, false) ? Result.UNSTABLE : Result.FAILURE);
+                      performedSuccessful = false;
+                  } catch (Exception ex) {
+                      lg.log(ex.getMessage());
+                      build.setResult(settings.get(Wix.MARK_UNSTABLE, false) ? Result.UNSTABLE : Result.FAILURE);
+                      performedSuccessful = false;
+                  }
 	  }
 	  return performedSuccessful;
     }
@@ -186,7 +229,7 @@ public class WixToolsetBuilder extends Builder {
 			}
             if (value.length() < 4) {
                 return FormValidation.warning("Isn't the name too short?");
-			}
+			}           
             File directory = new File(value);
             if (!directory.exists()) {
             	return FormValidation.error("Does not exist.");
