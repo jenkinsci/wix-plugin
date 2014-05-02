@@ -185,7 +185,7 @@ public class WixToolsetBuilder extends Builder {
     // If your plugin doesn't really define any property on Descriptor,
     // you don't have to do this.
     @Override
-    public DescriptorImpl getDescriptor() {
+    public final DescriptorImpl getDescriptor() {
         return (DescriptorImpl)super.getDescriptor();
     }
 
