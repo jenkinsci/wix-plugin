@@ -22,12 +22,11 @@ package de.berg.systeme.jenkins.wix;
 import hudson.EnvVars;
 import hudson.FilePath;
 import java.io.File;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.junit.After;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 import org.junit.Before;
 import org.junit.Test;
-import static org.junit.Assert.*;
 
 /**
  *
@@ -49,13 +48,18 @@ public class CandleTest {
     @After
     public void tearDown() {
     }
+    
+    private String onPlatform(String cmd) {
+        String os = System.getProperty("os.name");
+        return String.format("%s%s", os.startsWith("Windows") ? "C:\\" : "/", cmd);
+    }
 
     /**
      * Test of setArch method, of class Candle.
      */
     @Test
     public void testSetArch() {
-        final String CMD = "C:\\candle.exe -arch ia64 -nologo -out \"test.txt\" \"test.txt\" ";
+        final String CMD = onPlatform("candle.exe -arch ia64 -nologo -out \"test.txt\" \"test.txt\" ");
         try {
             FilePath fp = new FilePath(new File("test.txt"));
             candle.addSourceFile(fp);
@@ -73,7 +77,7 @@ public class CandleTest {
      */
     @Test
     public void testAddIncludePath() {
-        final String CMD = "C:\\candle.exe -arch x86 -I \"include\" -nologo -out \"test.txt\" \"test.txt\" ";
+        final String CMD = onPlatform("candle.exe -arch x86 -I \"include\" -nologo -out \"test.txt\" \"test.txt\" ");
         try {
             FilePath fp = new FilePath(new File("test.txt"));
             FilePath inc = new FilePath(new File("include"));
@@ -114,7 +118,7 @@ public class CandleTest {
      */
     @Test
     public void testCreateCommand_withSources() {
-        final String CMD = "C:\\candle.exe -arch x86 -nologo -out \"test.txt\" \"test.txt\" ";
+        final String CMD = onPlatform("candle.exe -arch x86 -nologo -out \"test.txt\" \"test.txt\" ");
         try {
             FilePath fp = new FilePath(new File("test.txt"));
             candle.addSourceFile(fp);
@@ -146,7 +150,7 @@ public class CandleTest {
      */
     @Test
     public void testCreateCommand_complete() {
-        final String CMD = "C:\\candle.exe -arch x86 -ext MyExtension -dvar_key=\"var_name\" -nologo -out \"output.txt\" \"input.txt\" ";
+        final String CMD = onPlatform("candle.exe -arch x86 -ext MyExtension -dvar_key=\"var_name\" -nologo -out \"output.txt\" \"input.txt\" ");
         try {
             FilePath input = new FilePath(new File("input.txt"));
             FilePath output = new FilePath(new File("output.txt"));
