@@ -152,6 +152,7 @@ public final class Toolset {
         // add output file
         candle.setOutputFile(output);
         
+        candle.createCommand();
         lg.debug("Executing command: %s", candle.toString());
         if (candle.execute()) {
             lg.log("Compiling successful.");
@@ -216,6 +217,7 @@ public final class Toolset {
         // add output file
         light.setOutputFile(output);
         
+        light.createCommand();
         lg.debug("Executing command: %s", light.toString());
         if (light.execute()) {
             lg.log("Linking successful.");

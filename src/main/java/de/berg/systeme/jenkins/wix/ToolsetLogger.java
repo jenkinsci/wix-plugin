@@ -55,6 +55,10 @@ public enum ToolsetLogger {
         this.debugEnabled   = debugEnabled;
     }
     
+    public void enableDebugLogging(boolean debug) {
+        this.debugEnabled = debug;
+    }
+    
     /**
      * logs a simple message.
      * @param msg message string.

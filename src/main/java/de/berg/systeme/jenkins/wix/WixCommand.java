@@ -24,12 +24,17 @@ import hudson.EnvVars;
 import hudson.FilePath;
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Scanner;
+import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Abstract class for building commands.
@@ -58,6 +63,8 @@ public abstract class WixCommand {
     protected boolean verbose = false;
     // treat all warnings as errors
     protected boolean wxall = false;
+    // not accepted environment variables
+    protected List<String> rejectedEnvVars = new LinkedList<String>(); 
 
     public WixCommand(ToolsetSettings settings, EnvVars vars) {
         this(null, settings, vars);
@@ -68,7 +75,39 @@ public abstract class WixCommand {
         String sep = System.getProperty("file.separator");
 	this.exec = new File(installationPath + sep + ExeName);
         this.settings = settings;
+        
+        // Environment variables which are not taken into account
+        try {
+            InputStream in = getClass().getResourceAsStream("/rejected.txt");
+            Scanner s = new Scanner(in);
+            while(s.hasNext()) {
+                addRejectedEnvVar(s.next());
+            }
+        } catch(Exception e) {
+            lg.log(e.getMessage());
+        }
+
         parseSettings(this.settings, vars);
+    }
+    
+    protected void addRejectedEnvVar(String envVar) {
+        this.rejectedEnvVars.add(envVar.toLowerCase());
+    }
+    
+    protected boolean isEnvVarRejected(String envVar, String value) {
+        boolean reject = false;
+        if(envVar.contains("=")) {
+            lg.debug(envVar + ": contains illegal character.");
+            reject = true;
+        }
+        if (!reject) {
+            if(rejectedEnvVars.contains(envVar.toLowerCase())) {
+               reject = true; 
+            } else {
+                reject = value.matches("([a-zA-Z]:)?(\\\\[a-zA-Z0-9 \\._\\-\\(\\)]+)+\\\\?");
+            }
+        }
+        return reject;
     }
     
     /**
@@ -80,16 +119,30 @@ public abstract class WixCommand {
         // Add extensions, we use reflection to avoid a lot of code
         Field[] fields = Wix.class.getFields();
         for (Field field : fields) {
-            String fieldName = field.getName();
-            if (fieldName.startsWith("EXT_") && settings.get(fieldName, false)) {
-                addExtension(fieldName);
+            try {
+                String fieldValue = (String)field.get(String.class.newInstance());
+                if (fieldValue.endsWith("Extension") && settings.get(fieldValue, false)) {
+                    addExtension(fieldValue);
+                }
+            } catch (InstantiationException ex) {
+                Logger.getLogger(WixCommand.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (IllegalAccessException ex) {
+                Logger.getLogger(WixCommand.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
         
         // add all environment variables as parameter
-        for (String varName : vars.keySet()) {
-            String value = vars.get(varName);
-            addParameter(varName, value);
+        for (Map.Entry<String,String> entry : vars.entrySet()) {
+            String varName = entry.getKey();
+            String value = entry.getValue();
+            // contains value a directory it is better to escape everything
+            if (isEnvVarRejected(varName, value)) {
+                lg.debug("Rejected Environment variable: " + varName);
+            } else {
+                value = value.replace("\"", "\\\"");
+                lg.debug("VarName: " + varName + "; Value: " + value);
+                addParameter(varName, value); 
+            }
         }
     }
 
@@ -236,7 +289,7 @@ public abstract class WixCommand {
      * @throws ToolsetException 
      */
     public boolean execute() throws Exception, ToolsetException {
-        // false überschreibt immer true
+        // false ï¿½berschreibt immer true
         boolean success = true;
         String line = null;
         
@@ -261,6 +314,6 @@ public abstract class WixCommand {
         p.waitFor();
         success &= (p.exitValue() > 0);
        
-        return success;
+        return !success;    // inverted logic at this point
     }
 }
