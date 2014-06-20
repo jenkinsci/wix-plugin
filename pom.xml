@@ -38,8 +38,8 @@
   </properties>
   <scm>
   	<url>https://github.com/jenkinsci/wix-plugin</url>
-  	<connection>scm:git:https://github.com/jenkinsci/wix-plugin.git</connection>
-  	<developerConnection>scm:git:https://@github.com/jenkinsci/wix-plugin.git</developerConnection>
+  	<connection>scm:git:ssh://github.com/jenkinsci/wix-plugin.git</connection>
+  	<developerConnection>scm:git:ssh://git@github.com//jenkinsci/wix-plugin.git</developerConnection>
   </scm>
   <description>Builder for MSI packages depending on the Windows Installer XML toolset.</description>
   <organization>
