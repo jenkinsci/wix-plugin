@@ -106,6 +106,11 @@ public final class Toolset {
         }
         return valid;
     }
+    
+    public void setArchitecture(String cpu) {
+        Wix.Arch arch = (cpu == null || cpu.isEmpty()) ? Wix.Arch.x86 : Wix.Arch.valueOf(cpu);
+        ((Candle)candle).setArch(arch);
+    }
 	
     /***
      * Compiles the given source file.

@@ -23,21 +23,18 @@ import hudson.EnvVars;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
-import hudson.model.BuildListener;
-import hudson.model.Result;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
+import hudson.model.BuildListener;
+import hudson.model.Result;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Builder;
 import hudson.util.FormValidation;
-
+import hudson.util.ListBoxModel;
 import java.io.File;
 import java.io.IOException;
-
 import javax.servlet.ServletException;
-
 import net.sf.json.JSONObject;
-
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
@@ -53,6 +50,8 @@ import org.kohsuke.stapler.StaplerRequest;
  */
 public class WixToolsetBuilder extends Builder {
     private final String sources;
+    private final String msiOutput;
+    private final String arch;
     private final ToolsetSettings settings;
     private final ToolsetLogger lg = ToolsetLogger.INSTANCE;
 
@@ -64,9 +63,11 @@ public class WixToolsetBuilder extends Builder {
     						 boolean useDifxAppExt, boolean useDirectXExt, boolean useFirewallExt, 
     						 boolean useGamingExt, boolean useIISExt, boolean useMsmqExt, 
     						 boolean useNetfxExt, boolean usePsExt, boolean useSqlExt, 
-    						 boolean useTagExt, boolean useVsExt) {
+    						 boolean useTagExt, boolean useVsExt, String msiOutput, String arch) {
         // This is only executed if the job is reconfigured
     	this.sources = sources;
+        this.msiOutput = msiOutput;
+        this.arch = arch;
         settings = new ToolsetSettings();
     	settings.set(Wix.MARK_UNSTABLE, markAsUnstable);
     	settings.set(Wix.COMPILE_ONLY, compileOnly);
@@ -88,6 +89,7 @@ public class WixToolsetBuilder extends Builder {
     	settings.set(Wix.EXT_UI, useUiExt);
     	settings.set(Wix.EXT_UTIL, useUtilExt);
     	settings.set(Wix.EXT_VS, useVsExt);
+        settings.set(Wix.MSI_PKG, msiOutput);
     }
 
 	////////////////////////////////////////////////////////////////////////////
@@ -120,6 +122,8 @@ public class WixToolsetBuilder extends Builder {
 	public boolean getUseSqlExt()		{ return getValue(Wix.EXT_SQL); } 
 	public boolean getUseTagExt()		{ return getValue(Wix.EXT_TAG); } 
 	public boolean getUseVsExt()		{ return getValue(Wix.EXT_VS); }
+        public String getMsiOutput()            { return msiOutput; }
+        public String getArch()                 { return arch; }
 	public String getSources()		{ return sources; }
 	///////////////////////// End of Getter section ////////////////////////////
 	
@@ -152,14 +156,18 @@ public class WixToolsetBuilder extends Builder {
 
               listener.getLogger().println("Initializing tools...");
               Toolset toolset = new Toolset(settings, envVars);
-              
+              // add architecture for compiler
+              toolset.setArchitecture(arch);
               listener.getLogger().println("Starting compile process...");
               FilePath objFile = toolset.compile(sources);
               if (settings.get(Wix.COMPILE_ONLY, false)) {
                   listener.getLogger().println("Skipping link process!");
               } else {
-                  listener.getLogger().println("Linking...");
-                  toolset.link(objFile);
+                  String output = settings.get(Wix.MSI_PKG, Wix.MSI_PKG_DEFAULT_NAME);
+                  output = envVars.expand(output);
+                  FilePath outFile = new FilePath(build.getWorkspace(), output);
+                  listener.getLogger().println("Linking to: " + outFile);
+                  toolset.link(objFile, outFile);
               }
               build.setResult(Result.SUCCESS);
               performedSuccessful = true;
@@ -245,6 +253,17 @@ public class WixToolsetBuilder extends Builder {
             return FormValidation.ok();
         }
         
+        public FormValidation doCheckMsiOutput(@QueryParameter String value)
+        throws IOException, ServletException {
+            if (value == null || value.length() == 0) {
+                return FormValidation.ok("Using default setup.msi");
+            }
+            if (!value.toLowerCase().endsWith(".msi")) {
+                return FormValidation.warning("Not a valid package name.");
+            }
+            return FormValidation.ok();
+        }
+        
         public FormValidation doCheckInstPath(@QueryParameter String value)
         throws IOException, ServletException {
             if (value == null || value.length() == 0) {
@@ -268,6 +287,18 @@ public class WixToolsetBuilder extends Builder {
          */
         public String getDisplayName() {
             return "WIX Toolset";
+        }
+        
+        /**
+         * Creates the ListBoxModel from enum {@link Wix.Arch}.
+         * @return 
+         */
+        public ListBoxModel doFillArchItems() {
+            ListBoxModel items = new ListBoxModel();
+            for (Wix.Arch cpu : Wix.Arch.values()) {
+                items.add(cpu.toString(), cpu.toString());
+            }
+            return items;
         }
 
         @Override

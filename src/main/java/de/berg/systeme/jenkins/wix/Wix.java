@@ -7,8 +7,7 @@ package de.berg.systeme.jenkins.wix;
  *
  */
 public interface Wix {
-    public static final String COMPILER = "candle.exe";
-    public static final String LINKER = "light.exe";
+    // --- accessors for ToolsetSettings
     public static final String INST_PATH = "installation.path";
     public static final String DEBUG_ENBL = "debug";
     public static final String COMPILE_ONLY = "compile.only";
@@ -29,6 +28,12 @@ public interface Wix {
     public static final String EXT_SQL = "WixSqlExtension";
     public static final String EXT_TAG = "WixTagExtension";
     public static final String EXT_VS = "WixVSExtension";
+    public static final String MSI_PKG = "MsiPackage";
+    
+    // --- predefined links
+    public static final String COMPILER = "candle.exe";
+    public static final String LINKER = "light.exe";
+    public static final String MSI_PKG_DEFAULT_NAME = "setup.msi";
     
     /**
      * preferred architecture for candle.
