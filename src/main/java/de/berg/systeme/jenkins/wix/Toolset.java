@@ -229,4 +229,17 @@ public final class Toolset {
         
         return routput;
     }
+    
+    /**
+     * Wrapper method for {@link #link(hudson.FilePath[], hudson.FilePath) link}.
+     * @param input input FilePath
+     * @param output output FilePath
+     * @return FilePath to output file used to link to (can be different from defined output)
+     * @throws Exception
+     * @throws ToolsetException 
+     */
+    public FilePath link(FilePath input, FilePath output) throws Exception, ToolsetException {
+        FilePath[] arr = {input};
+        return link(arr, output);
+    }
 }
