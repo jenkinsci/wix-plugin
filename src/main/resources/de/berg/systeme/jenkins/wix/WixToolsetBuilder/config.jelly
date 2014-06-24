@@ -11,6 +11,13 @@
    
   <f:section title="${%Advanced Project Options}">
   <f:advanced>
+    <f:entry title="${%OutputMSI}" field="msiOutput">
+        <f:textbox />
+    </f:entry>
+    <f:entry field="arch" title="${%Architecture}">
+        <f:select />
+    </f:entry> 
+    <!-- @todo: Refactor here with next release --> 
     <f:entry field="markAsUnstable">
     <f:checkbox />${%MarkAsUnstable}
   </f:entry>
