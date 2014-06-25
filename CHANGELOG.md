@@ -12,6 +12,11 @@ Environment variables (as long as defined) are expanded to their value. A packag
 ### Define defaults for architecture
 Set architecture defaults for package, components, etc. values: x86, x64, or ia64 (default: x86)
 
+### Minor changes
+* On the system configuration page the plugin is now called Wix Toolset instead of Windows Installer Builder.
+* Extended validation of installation directory. Checks now if directory contains compiler candle.exe und linker light.exe.
+* English and german messages depending on your system settings.
+
 
 Changes between Wix Toolset plugin 1.3 and 1.4
 ----------------------------------------------

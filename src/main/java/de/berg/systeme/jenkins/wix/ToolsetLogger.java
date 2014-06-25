@@ -22,6 +22,7 @@ package de.berg.systeme.jenkins.wix;
 import java.io.FileDescriptor;
 import java.io.FileOutputStream;
 import java.io.PrintStream;
+import java.util.ResourceBundle;
 
 /**
  * internal logger which uses PrintStream from Jenkins Listener.
@@ -33,6 +34,7 @@ public enum ToolsetLogger {
      * Singleton approach
      */
     INSTANCE;                    
+    private static final ResourceBundle messages = ResourceBundle.getBundle("Messages");
     private PrintStream stream;     // print stream
     private boolean debugEnabled;   // print debug messages or not
     

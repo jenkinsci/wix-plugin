@@ -1,8 +1,10 @@
 package de.berg.systeme.jenkins.wix;
 
 import java.util.Properties;
+import java.util.ResourceBundle;
 
 public class ToolsetSettings {
+    private static final ResourceBundle messages = ResourceBundle.getBundle("Messages");
 	private final Properties properties;
 	
 	public ToolsetSettings() {

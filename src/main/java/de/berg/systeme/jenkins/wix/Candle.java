@@ -24,12 +24,14 @@ import hudson.EnvVars;
 import hudson.FilePath;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.ResourceBundle;
 
 /**
  * Wix Command definition for Windows Installer Xml Compiler (candle.exe).
  * @author Bjoern.Berg
  */
 public class Candle extends WixCommand {
+    private static final ResourceBundle messages = ResourceBundle.getBundle("Messages");
     // Architecture
     Wix.Arch arch = Wix.Arch.x86;           // default is x86
     // this is done by defining -I<dir> more than once

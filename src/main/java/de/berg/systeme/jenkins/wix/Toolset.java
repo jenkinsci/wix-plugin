@@ -24,6 +24,7 @@ import hudson.FilePath;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ResourceBundle;
 
 /***
  * <p>Toolset checks the existence for the WIX Toolset on the buildsystem. If not available
@@ -35,6 +36,7 @@ import java.io.IOException;
  *
  */
 public final class Toolset {
+    private static final ResourceBundle messages = ResourceBundle.getBundle("Messages");
     // Environment variables
     private EnvVars envVars;
     // Command for compiler
@@ -69,8 +71,8 @@ public final class Toolset {
         this.candle     = new Candle(this.settings, this.envVars);
         this.light      = new Light(this.settings, this.envVars);
         // check
-        lg.log(this.candle.exists() ? "Compiler found." : "Compiler not found.");
-        lg.log(this.light.exists() ? "Linker found." : "Linker not found.");
+        lg.log(this.candle.exists() ? messages.getString("COMPILER_FOUND") : messages.getString("COMPILER_NOT_FOUND"));
+        lg.log(this.light.exists() ? messages.getString("LINKER_FOUND") : messages.getString("LINKER_NOT_FOUND"));
     }
     
     /**
@@ -148,23 +150,23 @@ public final class Toolset {
         // add every source file
         for (FilePath fp : input) {
             if (isValid(fp, ".wxs")) {
-                lg.debug("adding source file: %s", fp.getRemote());
+                lg.debug(messages.getString("ADDING_SOURCE_FILE"), fp.getRemote());
                 candle.addSourceFile(fp);
             } else {
-                lg.log("no valid source file: %s", fp.getRemote());
+                lg.log(messages.getString("NO_VALID_SOURCE_FILE"), fp.getRemote());
             }
         }
         // add output file
         candle.setOutputFile(output);
         
         candle.createCommand();
-        lg.debug("Executing command: %s", candle.toString());
+        lg.debug(messages.getString("EXECUTING_COMMAND"), candle.toString());
         if (candle.execute()) {
-            lg.log("Compiling successful.");
+            lg.log(messages.getString("COMPILING_SUCCESSFUL"));
             routput = output;
         } else {
-            lg.log("Compiling failed.");
-            throw new ToolsetException("Compiling failed.");
+            lg.log(messages.getString("COMPILING_FAILED"));
+            throw new ToolsetException(messages.getString("COMPILING_FAILED"));
         }
         return routput;
     }
@@ -173,7 +175,7 @@ public final class Toolset {
      * @deprecated use link(FilePath).
      */
     public void link() throws ToolsetException, Exception {
-        throw new UnsupportedOperationException("operation no longer supported");
+        throw new UnsupportedOperationException(messages.getString("OPERATION_NO_LONGER_SUPPORTED"));
     }
     
     /***
@@ -213,23 +215,23 @@ public final class Toolset {
         // add every source file
         for (FilePath fp : input) {
             if (isValid(fp, ".wixobj")) {
-                lg.debug("adding object file: %s", fp.getRemote());
+                lg.debug(messages.getString("ADDING_OBJECT_FILE"), fp.getRemote());
                 light.addSourceFile(fp);
             } else {
-                lg.log("no valid object file: %s", fp.getRemote());
+                lg.log(messages.getString("NO_VALID_OBJECT_FILE"), fp.getRemote());
             }
         }
         // add output file
         light.setOutputFile(output);
         
         light.createCommand();
-        lg.debug("Executing command: %s", light.toString());
+        lg.debug(messages.getString("EXECUTING_COMMAND"), light.toString());
         if (light.execute()) {
-            lg.log("Linking successful.");
+            lg.log(messages.getString("LINKING_SUCCESSFUL"));
             routput = output;
         } else {
-            lg.log("Linking failed.");
-            throw new ToolsetException("Linking failed.");
+            lg.log(messages.getString("LINKING_FAILED"));
+            throw new ToolsetException(messages.getString("LINKING_FAILED"));
         }
         
         return routput;

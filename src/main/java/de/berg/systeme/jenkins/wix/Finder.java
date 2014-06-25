@@ -22,12 +22,14 @@ package de.berg.systeme.jenkins.wix;
 import java.io.File;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.ResourceBundle;
 
 /**
  *
  * @author Bjoern.Berg
  */
 public class Finder {
+    private static final ResourceBundle messages = ResourceBundle.getBundle("Messages");
     private File target;
     final private List<File> results = new LinkedList<File>();
     
@@ -46,7 +48,7 @@ public class Finder {
     public void find(File file) {
         if ( file.getName().compareToIgnoreCase(target.getName()) == 0) {
             results.add(new File(file.getPath()));
-            System.out.println("Found: " + file);
+            System.out.println(java.text.MessageFormat.format(java.util.ResourceBundle.getBundle("Messages").getString("FOUND: {0}"), new Object[] {file}));
         }
     }
     
@@ -57,17 +59,17 @@ public class Finder {
                 startingDir.canRead()) {
                 for (File f : startingDir.listFiles()) {
                     if (f.isDirectory()) {
-                        System.out.println("Searching in: " + f.getAbsolutePath());
+                        System.out.println(java.text.MessageFormat.format(java.util.ResourceBundle.getBundle("Messages").getString("SEARCHING IN: {0}"), new Object[] {f.getAbsolutePath()}));
                         walkFileTree(f);
                     } else {
                         find(f);
                     }
                 }
             } else {
-                System.err.println("Not existent: " + startingDir);
+                System.err.println(java.text.MessageFormat.format(java.util.ResourceBundle.getBundle("Messages").getString("NOT EXISTENT: {0}"), new Object[] {startingDir}));
             }
         } catch(Exception e) {
-            System.err.println("Exception: " + e.getMessage());
+            System.err.println(java.text.MessageFormat.format(java.util.ResourceBundle.getBundle("Messages").getString("EXCEPTION: {0}"), new Object[] {e.getMessage()}));
         }
     }
     

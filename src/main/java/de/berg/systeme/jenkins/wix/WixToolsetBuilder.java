@@ -33,6 +33,7 @@ import hudson.util.FormValidation;
 import hudson.util.ListBoxModel;
 import java.io.File;
 import java.io.IOException;
+import java.util.ResourceBundle;
 import javax.servlet.ServletException;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.DataBoundConstructor;
@@ -49,6 +50,7 @@ import org.kohsuke.stapler.StaplerRequest;
  * @author Bjoern Berg, bjoern.berg@gmx.de
  */
 public class WixToolsetBuilder extends Builder {
+    private static final ResourceBundle messages = ResourceBundle.getBundle("Messages");
     private final String sources;
     private final String msiOutput;
     private final String arch;
@@ -138,35 +140,35 @@ public class WixToolsetBuilder extends Builder {
         final boolean debugEnabled = Boolean.valueOf(settings.get(Wix.DEBUG_ENBL, "false"));
     	
         if (instPath == null || "".equals(instPath)) {
-            listener.getLogger().println("Toolset not configured.");
+            listener.getLogger().println(messages.getString("TOOLSET_NOT_CONFIGURED"));
             performedSuccessful = false;
     	} else {
             try {
               // initialize our own logger
-              listener.getLogger().println("Enable Debug: " + debugEnabled);
+              listener.getLogger().println(java.text.MessageFormat.format(java.util.ResourceBundle.getBundle("Messages").getString("ENABLE DEBUG: {0}"), new Object[] {debugEnabled}));
               ToolsetLogger.INSTANCE.init(listener.getLogger(), debugEnabled);
 
               // get all environment variables
-              listener.getLogger().println("Detecting environment variables...");
+              listener.getLogger().println(messages.getString("DETECTING_ENVIRONMENT_VARIABLES"));
               EnvVars envVars = build.getEnvironment(listener);
 
               //FilePath sourceFile = new FilePath(build.getWorkspace(), getSources());
               FilePath[] sources = build.getWorkspace().list(getSources());
-              listener.getLogger().println("Found sources: " + sources.length);
+              listener.getLogger().println(java.text.MessageFormat.format(java.util.ResourceBundle.getBundle("Messages").getString("FOUND_SOURCES"), new Object[] {sources.length}));
 
-              listener.getLogger().println("Initializing tools...");
+              listener.getLogger().println(messages.getString("INITIALIZING_TOOLS"));
               Toolset toolset = new Toolset(settings, envVars);
               // add architecture for compiler
               toolset.setArchitecture(arch);
-              listener.getLogger().println("Starting compile process...");
+              listener.getLogger().println(messages.getString("STARTING_COMPILE_PROCESS"));
               FilePath objFile = toolset.compile(sources);
               if (settings.get(Wix.COMPILE_ONLY, false)) {
-                  listener.getLogger().println("Skipping link process!");
+                  listener.getLogger().println(messages.getString("SKIPPING_LINK"));
               } else {
                   String output = settings.get(Wix.MSI_PKG, Wix.MSI_PKG_DEFAULT_NAME);
                   output = envVars.expand(output);
                   FilePath outFile = new FilePath(build.getWorkspace(), output);
-                  listener.getLogger().println("Linking to: " + outFile);
+                  listener.getLogger().println(java.text.MessageFormat.format(java.util.ResourceBundle.getBundle("Messages").getString("LINKING_TO"), new Object[] {outFile}));
                   toolset.link(objFile, outFile);
               }
               build.setResult(Result.SUCCESS);
@@ -221,9 +223,6 @@ public class WixToolsetBuilder extends Builder {
         private String instPath;
         private boolean enableDebug;
         
-        // Build
-        //private boolean markAsUnstable;
-        
         public DescriptorImpl() {
         	load();
         }
@@ -241,14 +240,14 @@ public class WixToolsetBuilder extends Builder {
         public FormValidation doCheckSource(@QueryParameter String value)
         throws IOException, ServletException {
             if (value.length() == 0) {
-                return FormValidation.error("Please set a name");
+                return FormValidation.error(messages.getString("PLEASE_SET_A_NAME"));
 			}
             if (value.length() < 4) {
-                return FormValidation.warning("Isn't the name too short?");
+                return FormValidation.warning(messages.getString("NAME_TOO_SHORT"));
 			}           
             File directory = new File(value);
             if (!directory.exists()) {
-            	return FormValidation.error("Does not exist.");
+            	return FormValidation.error(messages.getString("DOES_NOT_EXIST"));
             }
             return FormValidation.ok();
         }
@@ -256,10 +255,10 @@ public class WixToolsetBuilder extends Builder {
         public FormValidation doCheckMsiOutput(@QueryParameter String value)
         throws IOException, ServletException {
             if (value == null || value.length() == 0) {
-                return FormValidation.ok("Using default setup.msi");
+                return FormValidation.ok(messages.getString("USING_DEFAULT_SETUP_MSI"));
             }
             if (!value.toLowerCase().endsWith(".msi")) {
-                return FormValidation.warning("Not a valid package name.");
+                return FormValidation.warning(messages.getString("NOT_A_VALID_PACKAGE_NAME"));
             }
             return FormValidation.ok();
         }
@@ -267,14 +266,63 @@ public class WixToolsetBuilder extends Builder {
         public FormValidation doCheckInstPath(@QueryParameter String value)
         throws IOException, ServletException {
             if (value == null || value.length() == 0) {
-                return FormValidation.error("Required.");
+                return FormValidation.error(messages.getString("REQUIRED"));
             }
+            // Check if directory exists
             File directory = new File(value);
             if (!directory.exists()) {
-            	return FormValidation.error("Does not exist.");
+            	return FormValidation.error(messages.getString("DOES_NOT_EXIST"));
+            }
+            // Check if directory contains compiler
+            StringBuilder sb = new StringBuilder();
+            sb.append(directory)
+              .append(System.getProperty("file.separator"))
+              .append(Wix.COMPILER);
+            File compiler = new File(sb.toString());
+            if (!compiler.exists()) {
+                return FormValidation.error(messages.getString("CANNOT_FIND_COMPILER_IN_DIRECTORY"));
             }
             return FormValidation.ok();
         }
+        
+        /*public FormValidation doFindDirectory(@QueryParameter String instPath) throws IOException, ServletException {
+            String pathVariable = System.getenv("PATH");
+            String wixInstDirectory = "";
+            try {
+                for (String directory : pathVariable.split(";")) {
+                    String linker = directory + System.getProperty("file.separator") + Wix.COMPILER;
+                    File fp = new File(linker);
+                    if (fp.exists()) {
+                        wixInstDirectory = directory;
+                        break;
+                    }
+                }
+                
+                // Read variables into path
+                File[] programFiles = new File[2];
+                programFiles[0] = new File(System.getenv("ProgramFiles"));
+                programFiles[1] = new File(System.getenv("ProgramFiles(x86)"));
+                
+                Finder finder = new Finder(Wix.COMPILER);
+                finder.walkFileTree(programFiles);
+                
+                StringBuilder found = new StringBuilder();
+                for (File f : finder.getResults()) {
+                    found.append(f.getAbsolutePath());
+                    found.append(";");
+                }
+                wixInstDirectory = found.toString();
+            } catch (NullPointerException e) {
+                return FormValidation.error("Wix Toolset Installation not found.");
+            }
+            
+            if (wixInstDirectory.isEmpty()) {
+                return FormValidation.error("Wix Toolset Installation not found.");
+            } else {
+                instPath = wixInstDirectory;
+                return FormValidation.ok("Success: " + wixInstDirectory);
+            }
+        }*/
 
         public boolean isApplicable(Class<? extends AbstractProject> aClass) {
             // Indicates that this builder can be used with all kinds of project types 
@@ -286,7 +334,7 @@ public class WixToolsetBuilder extends Builder {
 	     * @return 
          */
         public String getDisplayName() {
-            return "WIX Toolset";
+            return messages.getString("WIX_TOOLSET");
         }
         
         /**
@@ -338,4 +386,3 @@ public class WixToolsetBuilder extends Builder {
         }
     }
 }
-
