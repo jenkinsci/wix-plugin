@@ -41,4 +41,14 @@
                 <goal>release:perform</goal>
             </goals>
         </action>
+        <action>
+            <actionName>CUSTOM-Release Prepare (Dry Run)</actionName>
+            <displayName>Release Prepare (Dry Run)</displayName>
+            <goals>
+                <goal>release:prepare</goal>
+            </goals>
+            <properties>
+                <dryRun></dryRun>
+            </properties>
+        </action>
     </actions>
