@@ -2,6 +2,11 @@ ChangeLog
 =========
 Changelog between all revisions of WiX Toolset plugin for Jenkins.
 
+Changes between Wix Toolset plugin 1.5 and 1.6
+----------------------------------------------
+Version 1.5 contained a critical error which made it impossible to build any setup with WiX Toolset. 
+This error was produced while resolving a translated message.
+
 
 Changes between Wix Toolset plugin 1.4 and 1.5
 ----------------------------------------------

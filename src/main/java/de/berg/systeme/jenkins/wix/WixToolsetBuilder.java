@@ -145,7 +145,7 @@ public class WixToolsetBuilder extends Builder {
     	} else {
             try {
               // initialize our own logger
-              listener.getLogger().println(java.text.MessageFormat.format(java.util.ResourceBundle.getBundle("Messages").getString("ENABLE DEBUG: {0}"), new Object[] {debugEnabled}));
+              listener.getLogger().println(java.text.MessageFormat.format(java.util.ResourceBundle.getBundle("Messages").getString("ENABLE_DEBUG"), new Object[] {debugEnabled}));
               ToolsetLogger.INSTANCE.init(listener.getLogger(), debugEnabled);
 
               // get all environment variables
@@ -190,7 +190,7 @@ public class WixToolsetBuilder extends Builder {
                 build.setResult(settings.get(Wix.MARK_UNSTABLE, false) ? Result.UNSTABLE : Result.FAILURE);
                 performedSuccessful = false;
             } catch (Exception ex) {
-                lg.log(ex.getMessage());
+                listener.getLogger().println(ex.getMessage());
                 build.setResult(settings.get(Wix.MARK_UNSTABLE, false) ? Result.UNSTABLE : Result.FAILURE);
                 performedSuccessful = false;
             }
