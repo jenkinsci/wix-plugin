@@ -85,7 +85,9 @@ public class Candle extends WixCommand {
         clean();    // create a new StringBuffer
         check();    // check if cmd was still created
         
+        cmd.append("\"");
         cmd.append(exec.getAbsolutePath());     // candle.exe
+        cmd.append("\"");
         cmd.append(" ");
         cmd.append("-arch ");
         cmd.append(arch.name());                // architecture

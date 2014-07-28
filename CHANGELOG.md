@@ -2,8 +2,16 @@ ChangeLog
 =========
 Changelog between all revisions of WiX Toolset plugin for Jenkins.
 
+Changes between Wix Toolset plugin 1.6 and 1.7
+----------------------------------------------
+Released on: not yet
+Versions prior to 1.7 had problems with whitespaces in the installation directory of WiX Toolset.
+The Builder for executing the command is changed to wrap the commands candle.exe and light.exe with double quotes.
+
+
 Changes between Wix Toolset plugin 1.5 and 1.6
 ----------------------------------------------
+Released on: 2014-07-18
 Version 1.5 contained a critical error which made it impossible to build any setup with WiX Toolset. 
 This error was produced while resolving a translated message.
 

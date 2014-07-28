@@ -73,7 +73,7 @@ public abstract class WixCommand {
     public WixCommand(String ExeName, ToolsetSettings settings, EnvVars vars) {
         File installationPath = new File(settings.get(Wix.INST_PATH, ""));
         String sep = System.getProperty("file.separator");
-	this.exec = new File(installationPath + sep + ExeName);
+        this.exec = new File(installationPath + sep + ExeName);
         this.settings = settings;
         
         // Environment variables which are not taken into account
