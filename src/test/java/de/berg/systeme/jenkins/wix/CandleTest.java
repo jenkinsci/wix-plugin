@@ -53,13 +53,18 @@ public class CandleTest {
         String os = System.getProperty("os.name");
         return String.format("%s%s", os.startsWith("Windows") ? "C:\\" : "/", cmd);
     }
+    
+    private String onPlatform(String cmd, String args) {
+        String os = System.getProperty("os.name");
+        return String.format("\"%s%s\" %s", os.startsWith("Windows") ? "C:\\" : "/", cmd, args);
+    }
 
     /**
      * Test of setArch method, of class Candle.
      */
     @Test
     public void testSetArch() {
-        final String CMD = onPlatform("candle.exe -arch ia64 -nologo -out \"test.txt\" \"test.txt\" ");
+        final String CMD = onPlatform("candle.exe", "-arch ia64 -nologo -out \"test.txt\" \"test.txt\" ");
         try {
             FilePath fp = new FilePath(new File("test.txt"));
             candle.addSourceFile(fp);
@@ -77,7 +82,7 @@ public class CandleTest {
      */
     @Test
     public void testAddIncludePath() {
-        final String CMD = onPlatform("candle.exe -arch x86 -I \"include\" -nologo -out \"test.txt\" \"test.txt\" ");
+        final String CMD = onPlatform("candle.exe", "-arch x86 -I \"include\" -nologo -out \"test.txt\" \"test.txt\" ");
         try {
             FilePath fp = new FilePath(new File("test.txt"));
             FilePath inc = new FilePath(new File("include"));
@@ -118,7 +123,7 @@ public class CandleTest {
      */
     @Test
     public void testCreateCommand_withSources() {
-        final String CMD = onPlatform("candle.exe -arch x86 -nologo -out \"test.txt\" \"test.txt\" ");
+        final String CMD = onPlatform("candle.exe", "-arch x86 -nologo -out \"test.txt\" \"test.txt\" ");
         try {
             FilePath fp = new FilePath(new File("test.txt"));
             candle.addSourceFile(fp);
@@ -150,7 +155,7 @@ public class CandleTest {
      */
     @Test
     public void testCreateCommand_complete() {
-        final String CMD = onPlatform("candle.exe -arch x86 -ext MyExtension -dvar_key=\"var_name\" -nologo -out \"output.txt\" \"input.txt\" ");
+        final String CMD = onPlatform("candle.exe", "-arch x86 -ext MyExtension -dvar_key=\"var_name\" -nologo -out \"output.txt\" \"input.txt\" ");
         try {
             FilePath input = new FilePath(new File("input.txt"));
             FilePath output = new FilePath(new File("output.txt"));

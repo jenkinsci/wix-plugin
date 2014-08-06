@@ -48,7 +48,12 @@ public class LightTest {
     
     private String onPlatform(String cmd) {
         String os = System.getProperty("os.name");
-        return String.format("%s%s", os.startsWith("Windows") ? "C:\\" : "/", cmd);
+        return String.format("\"%s\"%s", os.startsWith("Windows") ? "C:\\" : "/", cmd);
+    }
+    
+    private String onPlatform(String cmd, String args) {
+        String os = System.getProperty("os.name");
+        return String.format("\"%s%s\" %s", os.startsWith("Windows") ? "C:\\" : "/", cmd, args);
     }
 
     /**
@@ -69,7 +74,7 @@ public class LightTest {
      */
     @Test
     public void testCreateCommand_withSources() {
-        final String CMD = onPlatform("light.exe -nologo -out \"test.txt\" \"test.txt\" ");
+        final String CMD = onPlatform("light.exe", "-nologo -out \"test.txt\" \"test.txt\" ");
         try {
             FilePath fp = new FilePath(new File("test.txt"));
             light.addSourceFile(fp);
@@ -101,7 +106,7 @@ public class LightTest {
      */
     @Test
     public void testCreateCommand_complete() {
-        final String CMD = onPlatform("light.exe -ext MyExtension -dvar_key=\"var_name\" -nologo -out \"output.txt\" \"input.txt\" ");
+        final String CMD = onPlatform("light.exe", "-ext MyExtension -dvar_key=\"var_name\" -nologo -out \"output.txt\" \"input.txt\" ");
         try {
             FilePath input = new FilePath(new File("input.txt"));
             FilePath output = new FilePath(new File("output.txt"));
