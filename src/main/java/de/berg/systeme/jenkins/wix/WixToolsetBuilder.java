@@ -257,6 +257,12 @@ public class WixToolsetBuilder extends Builder {
             if (value == null || value.length() == 0) {
                 return FormValidation.ok(messages.getString("USING_DEFAULT_SETUP_MSI"));
             }
+            if (value.contains("*")) {
+                return FormValidation.error("Patterns in output name are not allowed.");
+            }
+            if ( value.toLowerCase().endsWith(".exe") ) {
+                return FormValidation.warning("You need the Bootstrapper Extension (BalExtension) to build an Executable.");
+            }
             if (!value.toLowerCase().endsWith(".msi")) {
                 return FormValidation.warning(messages.getString("NOT_A_VALID_PACKAGE_NAME"));
             }
