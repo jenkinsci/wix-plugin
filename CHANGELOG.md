@@ -2,6 +2,16 @@ ChangeLog
 =========
 Changelog between all revisions of WiX Toolset plugin for Jenkins.
 
+Changes between Wix Toolset plugin 1.7 and 1.8
+----------------------------------------------
+Released on: 2014-09-26
+
+### Minor changes
+* Added french translation. Thanks to _mildis_.
+* Added new help file for MSI Output.
+* MSI Output can be also an executable (*.exe) if used together with bootstrapper.
+* Some minor refactoring.
+
 Changes between Wix Toolset plugin 1.6 and 1.7
 ----------------------------------------------
 Released on: 2014-08-06
