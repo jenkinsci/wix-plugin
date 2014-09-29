@@ -4,7 +4,7 @@ Changelog between all revisions of WiX Toolset plugin for Jenkins.
 
 Changes between Wix Toolset plugin 1.7 and 1.8
 ----------------------------------------------
-Released on: 2014-09-26
+Released on: 2014-09-29
 
 ### Minor changes
 * Added french translation. Thanks to _mildis_.
