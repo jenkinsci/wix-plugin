@@ -77,6 +77,7 @@ public abstract class WixCommand {
         this.settings = settings;
         
         // Environment variables which are not taken into account
+        // @todo: make it configurable
         try {
             InputStream in = getClass().getResourceAsStream("/rejected.txt");
             Scanner s = new Scanner(in);

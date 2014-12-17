@@ -15,9 +15,15 @@
     <f:entry title="${%InstallationPath}" field="instPath" description="${%InstallationPathDesc}">
       <f:textbox />
     </f:entry>
-    <!--<f:validateButton title="${%Auto Detect}" progress="${%Detecting...}" method="findDirectory" with="instPath" />-->
     <f:entry title="${%enableDbgMsg}" field="enableDebug">
       <f:checkbox />
     </f:entry>
+    <f:block>
+        <f:optionalBlock name="enableVars" field="enableVars" title="Add environment variables as parameters.">
+          <f:entry title="Reject Variables: " field="rejectedVarsList">
+            <f:textbox name="rejectedVarsList" value="${it.rejectedVarsList}" />
+          </f:entry>
+        </f:optionalBlock>
+    </f:block>
   </f:section>
 </j:jelly>

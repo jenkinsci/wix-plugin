@@ -20,25 +20,15 @@
 package de.berg.systeme.jenkins.wix;
 
 import hudson.EnvVars;
-import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
 import hudson.model.AbstractBuild;
-import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
 import hudson.model.Result;
-import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Builder;
-import hudson.util.FormValidation;
-import hudson.util.ListBoxModel;
-import java.io.File;
 import java.io.IOException;
 import java.util.ResourceBundle;
-import javax.servlet.ServletException;
-import net.sf.json.JSONObject;
 import org.kohsuke.stapler.DataBoundConstructor;
-import org.kohsuke.stapler.QueryParameter;
-import org.kohsuke.stapler.StaplerRequest;
 
 /**
  * WIXToolset {@link Builder}.

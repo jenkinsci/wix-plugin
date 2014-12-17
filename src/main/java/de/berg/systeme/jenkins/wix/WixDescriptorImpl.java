@@ -27,6 +27,9 @@ import hudson.util.FormValidation;
 import hudson.util.ListBoxModel;
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.ResourceBundle;
 import javax.servlet.ServletException;
 import net.sf.json.JSONObject;
@@ -48,9 +51,12 @@ public final class WixDescriptorImpl extends BuildStepDescriptor<Builder> {
    * If you don't want fields to be persisted, use <tt>transient</tt>.
    */
   // Globals
+  private static final String[] DEFAULT_REJECTION = {"Path", "CommonProgramFiles"};
   private static final ResourceBundle MESSAGES = ResourceBundle.getBundle("Messages");
-  private String instPath;
-  private boolean enableDebug;
+  private String instPath = "";
+  private boolean enableDebug = false;
+  private boolean enableVars = false;
+  private List<String> rejectedVarsList = Arrays.asList(DEFAULT_REJECTION);
 
   public WixDescriptorImpl() {
     super(WixToolsetBuilder.class);
@@ -115,6 +121,14 @@ public final class WixDescriptorImpl extends BuildStepDescriptor<Builder> {
     }
     return FormValidation.ok();
   }
+  
+  public FormValidation doCheckRejectedVarsList(@QueryParameter String value) throws IOException, ServletException {
+    if (value.contains(" ") || value.contains(",")) {
+      return FormValidation.error("Use ';' to separate environment variables.");
+    }
+    
+    return FormValidation.ok();
+  }
 
   public boolean isApplicable(Class<? extends AbstractProject> aClass) {
     // Indicates that this builder can be used with all kinds of project types
@@ -146,13 +160,25 @@ public final class WixDescriptorImpl extends BuildStepDescriptor<Builder> {
   public boolean configure(StaplerRequest req, JSONObject formData) throws FormException {
     // To persist global configuration information,
     // set that to properties and call save().
-    instPath = formData.getString("instPath");
-    enableDebug = formData.getBoolean("enableDebug");
-    /*settings.set(Wix.INST_PATH, instPath);
-    settings.set(Wix.DEBUG_ENBL, enableDebug);*/
-    //markAsUnstable = formData.getBoolean("markAsUnstable"); // only global config
-    // ^Can also use req.bindJSON(this, formData);
-    //  (easier when there are many fields; need set* methods for this, like setUseFrench)
+    this.instPath = formData.getString("instPath");
+    this.enableDebug = formData.getBoolean("enableDebug");
+    
+    // Optional field for Variable rejection
+    try {
+      JSONObject varList = formData.getJSONObject("enableVars");
+      if (varList != null) {
+        this.enableVars = true;
+        
+        String values = varList.getString("rejectedVarsList");
+        String[] array = values.split(";");
+        this.rejectedVarsList = Arrays.asList(array);
+      } else {
+        this.enableVars = false;
+      }
+    } catch (Exception e) {
+      System.out.println(e);
+    }
+    
     save();
     return super.configure(req, formData);
   }
@@ -165,14 +191,28 @@ public final class WixDescriptorImpl extends BuildStepDescriptor<Builder> {
    * @return
    */
   public String getInstPath() {
-    return instPath;
+      return instPath;
   }
 
-  /*public boolean getMarkAsUnstable() {
-  return markAsUnstable;
-  }*/
   public boolean getEnableDebug() {
-    return enableDebug;
+      return enableDebug;
   }
   
+  public String getRejectedVarsList() {
+    StringBuilder tmp = new StringBuilder();
+    for (String var : this.rejectedVarsList) {
+      tmp.append(var);
+      tmp.append(";");
+    }
+    tmp.deleteCharAt(tmp.length() - 1); // remove last ;
+    return tmp.toString();
+  }
+  
+  public List<String> listRejectedVars() {
+    return this.rejectedVarsList;
+  }
+  
+  public boolean getEnableVars() {
+    return this.enableVars;
+  }
 }
