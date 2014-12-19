@@ -48,7 +48,7 @@ public class Finder {
     public void find(File file) {
         if ( file.getName().compareToIgnoreCase(target.getName()) == 0) {
             results.add(new File(file.getPath()));
-            System.out.println(java.text.MessageFormat.format(java.util.ResourceBundle.getBundle("Messages").getString("FOUND: {0}"), new Object[] {file}));
+            System.out.println("[wix] " + java.text.MessageFormat.format(java.util.ResourceBundle.getBundle("Messages").getString("FOUND: {0}"), new Object[] {file}));
         }
     }
     

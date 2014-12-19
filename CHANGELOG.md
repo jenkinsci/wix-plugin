@@ -2,6 +2,19 @@ ChangeLog
 =========
 Changelog between all revisions of WiX Toolset plugin for Jenkins.
 
+Changes between Wix Toolset plugin 1.8 and 1.9
+----------------------------------------------
+Released on: not yet
+
+### Changes
+* Automatic addition of environment variables as parameters to candle and light is now globally configurable.
+* Administrators can decide which environment variables should not be taken into account as parameter.
+* Every log file from WiX Toolset plugin is now prefixed with _wix_.
+
+### Bugfixes
+* An empty filename for the MSI output is expanded to _setup.msi_.
+* Changed global settings are immediately active.
+
 Changes between Wix Toolset plugin 1.7 and 1.8
 ----------------------------------------------
 Released on: 2014-09-29

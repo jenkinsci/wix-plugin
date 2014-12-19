@@ -76,7 +76,7 @@ public enum ToolsetLogger {
     */
     public void log(String format, Object...args) {
         check();
-        stream.printf(format, args);
+        stream.printf("[wix] " + format, args);
         stream.println();
         stream.flush();
     }
@@ -97,7 +97,7 @@ public enum ToolsetLogger {
     public void debug(String format, Object...args) {
         if (debugEnabled) {
             check();
-            stream.printf(format, args);
+            stream.printf("[wix] " + format, args);
             stream.println();
             stream.flush();
         }

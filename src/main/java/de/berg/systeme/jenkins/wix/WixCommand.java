@@ -24,15 +24,12 @@ import hudson.EnvVars;
 import hudson.FilePath;
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Scanner;
-import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -77,21 +74,15 @@ public abstract class WixCommand {
         this.settings = settings;
         
         // Environment variables which are not taken into account
-        // @todo: make it configurable
-        try {
-            InputStream in = getClass().getResourceAsStream("/rejected.txt");
-            Scanner s = new Scanner(in);
-            while(s.hasNext()) {
-                addRejectedEnvVar(s.next());
-            }
-        } catch(Exception e) {
-            lg.log(e.getMessage());
+        String sysEnvVars = settings.get(Wix.LOV_REJECTED, Wix.DEF_LOV_TO_REJECT);
+        for(String s : sysEnvVars.split(",")) {
+            addRejectedEnvVar(s);
         }
 
         parseSettings(this.settings, vars);
     }
     
-    protected void addRejectedEnvVar(String envVar) {
+    private void addRejectedEnvVar(String envVar) {
         this.rejectedEnvVars.add(envVar.toLowerCase());
     }
     
@@ -133,17 +124,22 @@ public abstract class WixCommand {
         }
         
         // add all environment variables as parameter
-        for (Map.Entry<String,String> entry : vars.entrySet()) {
-            String varName = entry.getKey();
-            String value = entry.getValue();
-            // contains value a directory it is better to escape everything
-            if (isEnvVarRejected(varName, value)) {
-                lg.debug("Rejected Environment variable: " + varName);
-            } else {
-                value = value.replace("\"", "\\\"");
-                lg.debug("VarName: " + varName + "; Value: " + value);
-                addParameter(varName, value); 
+        // environment variables are only added, if option is set
+        if (settings.get(Wix.ENBL_ENV_AS_PARAM, false)) {
+            for (Map.Entry<String,String> entry : vars.entrySet()) {
+                String varName = entry.getKey();
+                String value = entry.getValue();
+                // contains value a directory it is better to escape everything
+                if (isEnvVarRejected(varName, value)) {
+                    lg.debug("Rejected Environment variable: " + varName);
+                } else {
+                    value = value.replace("\"", "\\\"");
+                    lg.debug("VarName: " + varName + "; Value: " + value);
+                    addParameter(varName, value); 
+                }
             }
+        } else {
+            lg.log("Environment variables are not automatically added as parameters.");
         }
     }
 
@@ -290,7 +286,7 @@ public abstract class WixCommand {
      * @throws ToolsetException 
      */
     public boolean execute() throws Exception, ToolsetException {
-        // false �berschreibt immer true
+        // false ï¿½berschreibt immer true
         boolean success = true;
         String line = null;
         
