@@ -4,7 +4,7 @@ Changelog between all revisions of WiX Toolset plugin for Jenkins.
 
 Changes between Wix Toolset plugin 1.8 and 1.9
 ----------------------------------------------
-Released on: not yet
+Released on: 2014-12-19
 
 ### Changes
 * Automatic addition of environment variables as parameters to candle and light is now globally configurable.
