@@ -21,10 +21,16 @@ package de.berg.systeme.jenkins.wix;
 
 import hudson.EnvVars;
 import hudson.FilePath;
+
 import java.io.File;
+
 import org.junit.After;
+
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+
 import org.junit.Before;
 import org.junit.Test;
 
@@ -33,40 +39,34 @@ import org.junit.Test;
  * @author Bjoern.Berg
  */
 public class CandleTest {
-    Candle candle;
+	private static final String DUMMY_INST_PATH = "C:\\Program Files (x86)\\WiX Toolset v3.7\\bin";
+    private Candle candle;
+    private EnvVars vars;
+    private ToolsetSettings settings;
     
     public CandleTest() {
     }
     
     @Before
     public void setUp() {
-        EnvVars vars = new EnvVars();
-        ToolsetSettings settings = new ToolsetSettings();
-        candle = new Candle(settings, vars);
+        vars = new EnvVars();
+        settings = new ToolsetSettings();
     }
     
     @After
     public void tearDown() {
     }
     
-    private String onPlatform(String cmd) {
-        String os = System.getProperty("os.name");
-        return String.format("%s%s", os.startsWith("Windows") ? "C:\\" : "/", cmd);
-    }
-    
-    private String onPlatform(String cmd, String args) {
-        String os = System.getProperty("os.name");
-        return String.format("\"%s%s\" %s", os.startsWith("Windows") ? "C:\\" : "/", cmd, args);
-    }
 
     /**
      * Test of setArch method, of class Candle.
      */
     @Test
     public void testSetArch() {
-        final String CMD = onPlatform("candle.exe", "-arch ia64 -nologo -out \"test.txt\" \"test.txt\" ");
+        final String CMD = "\"candle.exe\" -arch ia64 -nologo -out \"test.txt\" \"test.txt\" ";
         try {
             FilePath fp = new FilePath(new File("test.txt"));
+            candle = new Candle(settings, vars);
             candle.addSourceFile(fp);
             candle.setOutputFile(fp);
             candle.setArch(Wix.Arch.ia64);
@@ -82,10 +82,11 @@ public class CandleTest {
      */
     @Test
     public void testAddIncludePath() {
-        final String CMD = onPlatform("candle.exe", "-arch x86 -I \"include\" -nologo -out \"test.txt\" \"test.txt\" ");
+        final String CMD = "\"candle.exe\" -arch x86 -I \"include\" -nologo -out \"test.txt\" \"test.txt\" ";
         try {
             FilePath fp = new FilePath(new File("test.txt"));
             FilePath inc = new FilePath(new File("include"));
+            candle = new Candle(settings, vars);
             candle.addSourceFile(fp);
             candle.setOutputFile(fp);
             candle.addIncludePath(inc);
@@ -102,6 +103,7 @@ public class CandleTest {
     @Test
     public void testToString() {
         // without calling createCommand it must be empty
+    	candle = new Candle(settings, vars);
         assertEquals("", candle.toString());
     }
 
@@ -111,6 +113,7 @@ public class CandleTest {
     @Test
     public void testCreateCommand() {
        try {
+    	    candle = new Candle(settings, vars);
             candle.createCommand();
             fail("must fail with missing source files.");
         } catch (ToolsetException ex) {
@@ -123,9 +126,10 @@ public class CandleTest {
      */
     @Test
     public void testCreateCommand_withSources() {
-        final String CMD = onPlatform("candle.exe", "-arch x86 -nologo -out \"test.txt\" \"test.txt\" ");
+        final String CMD = "\"candle.exe\" -arch x86 -nologo -out \"test.txt\" \"test.txt\" ";
         try {
             FilePath fp = new FilePath(new File("test.txt"));
+            candle = new Candle(settings, vars);
             candle.addSourceFile(fp);
             candle.setOutputFile(fp);
             candle.createCommand();
@@ -141,6 +145,7 @@ public class CandleTest {
     @Test
     public void testCreateCommand_withNullSources() {
         try {
+        	candle = new Candle(settings, vars);
             candle.addSourceFile(null);
             candle.setOutputFile(null);
             candle.createCommand();
@@ -155,10 +160,11 @@ public class CandleTest {
      */
     @Test
     public void testCreateCommand_complete() {
-        final String CMD = onPlatform("candle.exe", "-arch x86 -ext MyExtension -dvar_key=\"var_name\" -nologo -out \"output.txt\" \"input.txt\" ");
+        final String CMD = "\"candle.exe\" -arch x86 -ext MyExtension -dvar_key=\"var_name\" -nologo -out \"output.txt\" \"input.txt\" ";
         try {
             FilePath input = new FilePath(new File("input.txt"));
             FilePath output = new FilePath(new File("output.txt"));
+            candle = new Candle(settings, vars);
             candle.addSourceFile(input);
             candle.setOutputFile(output);
             candle.addExtension("MyExtension");
@@ -170,4 +176,41 @@ public class CandleTest {
         }
     }
     
+    @Test
+    public void testWithFullInstallationPath() {
+    	final String CMD = String.format("\"%s\\%s", DUMMY_INST_PATH, "candle.exe\" -arch ia64 -nologo -out \"test.txt\" \"test.txt\" ");
+    	settings.set(Wix.INST_PATH, DUMMY_INST_PATH);
+        try {
+            FilePath fp = new FilePath(new File("test.txt"));
+            candle = new Candle(settings, vars);
+            candle.addSourceFile(fp);
+            candle.setOutputFile(fp);
+            candle.setArch(Wix.Arch.ia64);
+            candle.createCommand();
+            assertEquals(CMD, candle.toString());
+        } catch (ToolsetException ex) {
+            fail(ex.getMessage());
+        }
+    }
+    
+    @Test
+    public void testIfExistsWithExecutableInPath() {
+    	try { 
+    		candle = new Candle(settings, vars);
+    		assertFalse(candle.exists());
+    	} catch (ToolsetException ex) {
+            fail(ex.getMessage());
+        }
+    }
+    
+    @Test
+    public void testIfExistsWithFullPath() {
+    	settings.set(Wix.INST_PATH, DUMMY_INST_PATH);
+    	try { 
+    		candle = new Candle(settings, vars);
+    		assertTrue(candle.exists());
+    	} catch (ToolsetException ex) {
+            fail(ex.getMessage());
+        }
+    }   
 }

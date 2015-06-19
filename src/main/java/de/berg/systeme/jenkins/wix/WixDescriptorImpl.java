@@ -25,13 +25,15 @@ import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Builder;
 import hudson.util.FormValidation;
 import hudson.util.ListBoxModel;
+
 import java.io.File;
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.List;
 import java.util.ResourceBundle;
+
 import javax.servlet.ServletException;
+
 import net.sf.json.JSONObject;
+
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 
@@ -128,6 +130,7 @@ public final class WixDescriptorImpl extends BuildStepDescriptor<Builder> {
     return FormValidation.ok();
   }
 
+  @SuppressWarnings("rawtypes")
   public boolean isApplicable(Class<? extends AbstractProject> aClass) {
     // Indicates that this builder can be used with all kinds of project types
     return true;

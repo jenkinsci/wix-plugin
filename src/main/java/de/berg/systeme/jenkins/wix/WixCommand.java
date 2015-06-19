@@ -22,6 +22,7 @@ package de.berg.systeme.jenkins.wix;
 
 import hudson.EnvVars;
 import hudson.FilePath;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.InputStreamReader;
@@ -32,6 +33,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import org.apache.commons.lang.StringUtils;
 
 /**
  * Abstract class for building commands.
@@ -68,9 +71,27 @@ public abstract class WixCommand {
     }
     
     public WixCommand(String ExeName, ToolsetSettings settings, EnvVars vars) {
-        File installationPath = new File(settings.get(Wix.INST_PATH, ""));
-        String sep = System.getProperty("file.separator");
-        this.exec = new File(installationPath + sep + ExeName);
+    	// Bugfix:
+    	// It is stated that candle and light will work, if no installation path
+    	// is given, so installation path cannot be stated as given. This will
+    	// also help to configure Wix on a UNIX master and used on a Windows
+    	// slave machine.
+    	String path = settings.get(Wix.INST_PATH, "");
+    	if ( StringUtils.isEmpty(path) ) {
+    		// no installation path configured
+    		this.exec = new File(ExeName);
+    	} else {
+    		// installation path is given
+    		char lastSign = path.charAt( path.length() - 1 );
+    		if (lastSign == '/' || lastSign == '\\') {
+    			this.exec = new File(path + ExeName);
+    		} else {
+    			String sep = System.getProperty("file.separator");
+    	        this.exec = new File(path + sep + ExeName);
+    		}
+    				
+    	}
+    	
         this.settings = settings;
         
         // Environment variables which are not taken into account
@@ -91,13 +112,9 @@ public abstract class WixCommand {
         if(envVar.contains("=")) {
             lg.debug(envVar + ": contains illegal character.");
             reject = true;
-        }
-        if (!reject) {
-            if(rejectedEnvVars.contains(envVar.toLowerCase())) {
-               reject = true; 
-            } else {
-                reject = value.matches("([a-zA-Z]:)?(\\\\[a-zA-Z0-9 \\._\\-\\(\\)]+)+\\\\?");
-            }
+        } else if ( rejectedEnvVars.contains(envVar.toLowerCase()) ) {
+        	lg.debug(envVar + ": is marked as ignorable variable.");
+        	reject = true;
         }
         return reject;
     }
@@ -214,13 +231,23 @@ public abstract class WixCommand {
      * @throws ToolsetException if toolset is not configured.
      */
     public boolean exists() throws ToolsetException {
-        if (!exec.exists()) {
-            throw new ToolsetException("No binary found: " + exec.getAbsolutePath());
-        }
-        if (!exec.canExecute()) {
-            throw new ToolsetException("No execution rights on " + exec.getName());
-        }
-        return true;
+    	boolean testResult = true;
+    	int len = exec.getPath().length();
+    	if (len <= 10) {
+    		// candle.exe has 10 signs (light.exe less), if path contains not more than
+    		// 10 signs we expect that we are configured running on a Windows slave
+    		lg.log("Expecting executable in path.");
+    		testResult = false;
+    	} else {
+	    	// The following can only work if full path is given
+	        if (!exec.exists()) {
+	            throw new ToolsetException("No binary found: " + exec.getPath());
+	        }
+	        if (!exec.canExecute()) {
+	            throw new ToolsetException("No execution rights on " + exec.getName());
+	        }
+    	}
+        return testResult;
     } 
     
     protected void appendExtensions() {

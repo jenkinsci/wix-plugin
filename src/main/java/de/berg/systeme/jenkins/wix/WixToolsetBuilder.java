@@ -46,8 +46,7 @@ public class WixToolsetBuilder extends Builder {
     private final String msiOutput;
     private final String arch;
     private final ToolsetSettings settings;
-    private final ToolsetLogger lg = ToolsetLogger.INSTANCE;
-
+    
     // Fields in config.jelly must match the parameter names in the "DataBoundConstructor"
     @DataBoundConstructor
     public WixToolsetBuilder(String sources, boolean markAsUnstable, boolean compileOnly, 
@@ -117,9 +116,9 @@ public class WixToolsetBuilder extends Builder {
 	public boolean getUseSqlExt()		{ return getValue(Wix.EXT_SQL); } 
 	public boolean getUseTagExt()		{ return getValue(Wix.EXT_TAG); } 
 	public boolean getUseVsExt()		{ return getValue(Wix.EXT_VS); }
-        public String getMsiOutput()            { return msiOutput; }
-        public String getArch()                 { return arch; }
-	public String getSources()		{ return sources; }
+    public String getMsiOutput()        { return msiOutput; }
+    public String getArch()             { return arch; }
+	public String getSources()			{ return sources; }
 	///////////////////////// End of Getter section ////////////////////////////
 	
     @Override

@@ -1,8 +1,8 @@
 package de.berg.systeme.jenkins.wix;
 
-import java.util.Properties;
+import static org.junit.Assert.assertEquals;
 
-import junit.framework.Assert;
+import java.util.Properties;
 
 import org.junit.After;
 import org.junit.Before;
@@ -28,20 +28,20 @@ public class ToolsetSettingsTest {
 
 	@Test
 	public void testGetStringString() {
-		Assert.assertEquals("/hallo/welt", ts.get(Wix.INST_PATH, "/hallo/du"));
-		Assert.assertEquals("/hallo/du", ts.get(Wix.EXT_BAL, "/hallo/du"));
+		assertEquals("/hallo/welt", ts.get(Wix.INST_PATH, "/hallo/du"));
+		assertEquals("/hallo/du", ts.get(Wix.EXT_BAL, "/hallo/du"));
 	}
 
 	@Test
 	public void testGetStringBoolean() {
-		Assert.assertEquals(false, ts.get(Wix.COMPILE_ONLY, true));
+		assertEquals(false, ts.get(Wix.COMPILE_ONLY, true));
 		// can be parsed but evaluates to false
-		Assert.assertEquals(false, ts.get(Wix.INST_PATH, true));
+		assertEquals(false, ts.get(Wix.INST_PATH, true));
 	}
 
 	@Test
 	public void testGetStringFloat() {
-		Assert.assertEquals(1.0, ts.get("Level", 2.0));
-		Assert.assertEquals(2.0, ts.get("Meins", 2.0));
+		assertEquals(1.0, ts.get("Level", 2.0), 0);
+		assertEquals(2.0, ts.get("Meins", 2.0), 0);
 	}
 }

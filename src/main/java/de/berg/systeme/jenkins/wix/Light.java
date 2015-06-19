@@ -21,14 +21,12 @@
 package de.berg.systeme.jenkins.wix;
 
 import hudson.EnvVars;
-import java.util.ResourceBundle;
 
 /**
  * command definition for Wix Toolset Linker (light.exe)
  * @author Bjoern.Berg
  */
 class Light extends WixCommand {
-    private static final ResourceBundle messages = ResourceBundle.getBundle("Messages");
     /**
      * constructor.
      * @param settings global settings.
