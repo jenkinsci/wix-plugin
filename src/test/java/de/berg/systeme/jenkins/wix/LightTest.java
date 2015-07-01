@@ -19,41 +19,39 @@
  */
 package de.berg.systeme.jenkins.wix;
 
-import hudson.EnvVars;
-import hudson.FilePath;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import java.io.File;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import static org.junit.Assert.*;
+
+import hudson.EnvVars;
+import hudson.FilePath;
 
 /**
  *
  * @author Bjoern.Berg
  */
 public class LightTest {
-    Light light;
+	private static final String DUMMY_INST_PATH = "C:\\Program Files (x86)\\WiX Toolset v3.7\\bin";
+    private EnvVars vars;
+    private ToolsetSettings settings;
+    private Light light;
     
     
     @Before
     public void setUp() {
-        EnvVars vars = new EnvVars();
-        ToolsetSettings settings = new ToolsetSettings();
-        light = new Light(settings, vars);
+        vars = new EnvVars();
+        settings = new ToolsetSettings();
     }
     
     @After
     public void tearDown() {
-    }
-    
-    private String onPlatform(String cmd) {
-        String os = System.getProperty("os.name");
-        return String.format("\"%s\"%s", os.startsWith("Windows") ? "C:\\" : "/", cmd);
-    }
-    
-    private String onPlatform(String cmd, String args) {
-        String os = System.getProperty("os.name");
-        return String.format("\"%s%s\" %s", os.startsWith("Windows") ? "C:\\" : "/", cmd, args);
     }
 
     /**
@@ -62,6 +60,7 @@ public class LightTest {
     @Test
     public void testCreateCommand() {
         try {
+        	light = new Light(settings, vars);
             light.createCommand();
             fail("must fail with missing source files.");
         } catch (ToolsetException ex) {
@@ -74,9 +73,10 @@ public class LightTest {
      */
     @Test
     public void testCreateCommand_withSources() {
-        final String CMD = onPlatform("light.exe", "-nologo -out \"test.txt\" \"test.txt\" ");
+        final String CMD = "\"light.exe\" -nologo -out \"test.txt\" \"test.txt\" ";
         try {
             FilePath fp = new FilePath(new File("test.txt"));
+            light = new Light(settings, vars);
             light.addSourceFile(fp);
             light.setOutputFile(fp);
             light.createCommand();
@@ -92,6 +92,7 @@ public class LightTest {
     @Test
     public void testCreateCommand_withNullSources() {
         try {
+        	light = new Light(settings, vars);
             light.addSourceFile(null);
             light.setOutputFile(null);
             light.createCommand();
@@ -106,10 +107,11 @@ public class LightTest {
      */
     @Test
     public void testCreateCommand_complete() {
-        final String CMD = onPlatform("light.exe", "-ext MyExtension -dvar_key=\"var_name\" -nologo -out \"output.txt\" \"input.txt\" ");
+        final String CMD = "\"light.exe\" -ext MyExtension -dvar_key=\"var_name\" -nologo -out \"output.txt\" \"input.txt\" ";
         try {
             FilePath input = new FilePath(new File("input.txt"));
             FilePath output = new FilePath(new File("output.txt"));
+            light = new Light(settings, vars);
             light.addSourceFile(input);
             light.setOutputFile(output);
             light.addExtension("MyExtension");
@@ -127,7 +129,44 @@ public class LightTest {
     @Test
     public void testToString() {
         // without calling createCommand it must be empty
+    	light = new Light(settings, vars);
         assertEquals("", light.toString());
     }
     
+    @Test
+    public void testWithFullInstallationPath() {
+    	final String CMD = String.format("\"%s\\%s", DUMMY_INST_PATH, "light.exe\" -nologo -out \"test.txt\" \"test.txt\" ");
+    	settings.set(Wix.INST_PATH, DUMMY_INST_PATH);
+        try {
+            FilePath fp = new FilePath(new File("test.txt"));
+            light = new Light(settings, vars);
+            light.addSourceFile(fp);
+            light.setOutputFile(fp);
+            light.createCommand();
+            assertEquals(CMD, light.toString());
+        } catch (ToolsetException ex) {
+            fail(ex.getMessage());
+        }
+    }
+    
+    @Test
+    public void testIfExistsWithExecutableInPath() {
+    	try { 
+    		light = new Light(settings, vars);
+    		assertFalse(light.exists());
+    	} catch (ToolsetException ex) {
+            fail(ex.getMessage());
+        }
+    }
+    
+    @Test
+    public void testIfExistsWithFullPath() {
+    	settings.set(Wix.INST_PATH, DUMMY_INST_PATH);
+    	try { 
+    		light = new Light(settings, vars);
+    		assertTrue(light.exists());
+    	} catch (ToolsetException ex) {
+            fail(ex.getMessage());
+        }
+    }   
 }

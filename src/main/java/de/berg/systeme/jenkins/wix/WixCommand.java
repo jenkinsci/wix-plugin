@@ -88,8 +88,7 @@ public abstract class WixCommand {
     		} else {
     			String sep = System.getProperty("file.separator");
     	        this.exec = new File(path + sep + ExeName);
-    		}
-    				
+    		}		
     	}
     	
         this.settings = settings;
@@ -150,7 +149,14 @@ public abstract class WixCommand {
                 if (isEnvVarRejected(varName, value)) {
                     lg.debug("Rejected Environment variable: " + varName);
                 } else {
-                    value = value.replace("\"", "\\\"");
+                	if ( StringUtils.isNotEmpty(value) ) {
+	                    value = value.replace("\"", "\\\"");
+	                    // Bugfix: - add a second backslash
+	                    // fix for accidently quoted double quotes resulting in an
+	                    // appended backslash in a value 
+	                    char lastChar = value.charAt(value.length() - 1);
+	                    if (lastChar == '\\') { value += "\\"; }
+                	}
                     lg.debug("VarName: " + varName + "; Value: " + value);
                     addParameter(varName, value); 
                 }
