@@ -48,7 +48,7 @@ class Light extends WixCommand {
         check();    // check if cmd was still created
         
         cmd.append("\"");
-        cmd.append(exec.getAbsolutePath());     // light.exe
+        cmd.append(exec.getPath());     // light.exe
         cmd.append("\"");
         cmd.append(" ");
         appendExtensions();                     // append extensions
