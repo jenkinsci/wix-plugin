@@ -105,7 +105,7 @@ public final class WixDescriptorImpl extends BuildStepDescriptor<Builder> {
 
   public FormValidation doCheckInstPath(@QueryParameter String value) throws IOException, ServletException {
     if (value == null || value.length() == 0) {
-      return FormValidation.error(MESSAGES.getString("REQUIRED"));
+      return FormValidation.warning(MESSAGES.getString("EXPECTING_IN_PATH"));
     }
     // Check if directory exists
     File directory = new File(value);
