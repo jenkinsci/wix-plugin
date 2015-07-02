@@ -56,6 +56,7 @@ public final class WixDescriptorImpl extends BuildStepDescriptor<Builder> {
   private String instPath = "";
   private boolean enableDebug = false;
   private boolean enableVars = false;
+  private boolean usedOnSlave = false;
   private String rejectedVars = Wix.DEF_LOV_TO_REJECT;
 
   public WixDescriptorImpl() {
@@ -163,6 +164,8 @@ public final class WixDescriptorImpl extends BuildStepDescriptor<Builder> {
         // Needed settings
         this.instPath = formData.getString("instPath");
         this.enableDebug = formData.getBoolean("enableDebug");
+        this.usedOnSlave = formData.getBoolean("usedOnSlave");
+        
         // Optional field for Variable rejection
         JSONObject varList = formData.getJSONObject("enableVars");
         if (varList != null && varList.size() > 0) {
@@ -202,4 +205,9 @@ public final class WixDescriptorImpl extends BuildStepDescriptor<Builder> {
   public boolean getEnableVars() {
     return enableVars;
   }
+
+	public boolean getUsedOnSlave() {
+		return usedOnSlave;
+	}
+  
 }

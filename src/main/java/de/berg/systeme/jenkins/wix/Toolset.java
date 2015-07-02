@@ -47,6 +47,8 @@ public final class Toolset {
     private final ToolsetLogger lg = ToolsetLogger.INSTANCE;
     // global setting
     private final ToolsetSettings settings;
+    // Windows slave mode
+    private boolean usedOnSlave = false;
 
     /**
      * constructor with global settings.
@@ -70,9 +72,16 @@ public final class Toolset {
         // initialize commands
         this.candle     = new Candle(this.settings, this.envVars);
         this.light      = new Light(this.settings, this.envVars);
+        usedOnSlave		= properties.get(Wix.USED_ON_SLAVE, false);
+        
         // check
-        lg.log(this.candle.exists() ? messages.getString("COMPILER_FOUND") : messages.getString("COMPILER_NOT_FOUND"));
-        lg.log(this.light.exists() ? messages.getString("LINKER_FOUND") : messages.getString("LINKER_NOT_FOUND"));
+        if (usedOnSlave) {
+        	lg.log("Wix Toolset plugin is running in slave mode.");
+    		lg.log("Do not test if toolset is installed.");
+        } else {
+        	lg.log(this.candle.exists() ? messages.getString("COMPILER_FOUND") : messages.getString("COMPILER_NOT_FOUND"));
+        	lg.log(this.light.exists() ? messages.getString("LINKER_FOUND") : messages.getString("LINKER_NOT_FOUND"));
+        }
     }
     
     /**

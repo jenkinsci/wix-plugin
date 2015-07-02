@@ -12,6 +12,7 @@ public interface Wix {
     public static final String DEBUG_ENBL = "debug";
     public static final String COMPILE_ONLY = "compile.only";
     public static final String MARK_UNSTABLE = "mark.unstable";
+    public static final String USED_ON_SLAVE = "used.on.slave";
     public static final String ENBL_ENV_AS_PARAM = "env.as.param";
     public static final String LOV_REJECTED = "sys.env";
     public static final String DEF_LOV_TO_REJECT = "Path,CommonProgramFiles";

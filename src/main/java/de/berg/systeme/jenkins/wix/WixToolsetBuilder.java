@@ -67,6 +67,7 @@ public class WixToolsetBuilder extends Builder {
     	settings.set(Wix.DEBUG_ENBL, getDescriptor().getEnableDebug());
         settings.set(Wix.LOV_REJECTED, getDescriptor().getRejectedVarsList());
         settings.set(Wix.ENBL_ENV_AS_PARAM, getDescriptor().getEnableVars());
+        settings.set(Wix.USED_ON_SLAVE, getDescriptor().getUsedOnSlave());
     	settings.set(Wix.EXT_BAL, useBalExt);
     	settings.set(Wix.EXT_COMPLUS, useComPlusExt);
     	settings.set(Wix.EXT_DEPENDENCY, useDependencyExt);
@@ -128,6 +129,7 @@ public class WixToolsetBuilder extends Builder {
     	settings.set(Wix.DEBUG_ENBL, getDescriptor().getEnableDebug());
         settings.set(Wix.LOV_REJECTED, getDescriptor().getRejectedVarsList());
         settings.set(Wix.ENBL_ENV_AS_PARAM, getDescriptor().getEnableVars());
+        settings.set(Wix.USED_ON_SLAVE, getDescriptor().getUsedOnSlave());
         
 	boolean performedSuccessful = false;
         final String instPath = settings.get(Wix.INST_PATH, "");

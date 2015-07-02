@@ -64,7 +64,7 @@ public abstract class WixCommand {
     // treat all warnings as errors
     protected boolean wxall = false;
     // not accepted environment variables
-    protected List<String> rejectedEnvVars = new LinkedList<String>(); 
+    protected List<String> rejectedEnvVars = new LinkedList<String>();
 
     public WixCommand(ToolsetSettings settings, EnvVars vars) {
         this(null, settings, vars);
@@ -86,12 +86,12 @@ public abstract class WixCommand {
     		if (lastSign == '/' || lastSign == '\\') {
     			this.exec = new File(path + ExeName);
     		} else {
-    			String sep = System.getProperty("file.separator");
-    	        this.exec = new File(path + sep + ExeName);
+    			//String sep = System.getProperty("file.separator");
+    	        this.exec = new File(path + "\\" + ExeName);
     		}		
     	}
-    	
-        this.settings = settings;
+        
+    	this.settings = settings;
         
         // Environment variables which are not taken into account
         String sysEnvVars = settings.get(Wix.LOV_REJECTED, Wix.DEF_LOV_TO_REJECT);
