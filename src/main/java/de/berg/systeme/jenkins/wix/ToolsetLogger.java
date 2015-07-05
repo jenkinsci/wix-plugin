@@ -21,6 +21,7 @@ package de.berg.systeme.jenkins.wix;
 
 import java.io.FileDescriptor;
 import java.io.FileOutputStream;
+import java.io.OutputStream;
 import java.io.PrintStream;
 
 /**
@@ -35,6 +36,7 @@ public enum ToolsetLogger {
     INSTANCE;                    
     private PrintStream stream;     // print stream
     private boolean debugEnabled;   // print debug messages or not
+    private int errorCount;
     
     /**
      * initializes logger with print stream. Use Jenkins Listener.getLogger().
@@ -53,6 +55,7 @@ public enum ToolsetLogger {
     public void init(PrintStream stream, boolean debugEnabled) {
         this.stream         = stream;
         this.debugEnabled   = debugEnabled;
+        this.errorCount		= 0;
     }
     
     public void enableDebugLogging(boolean debug) {
@@ -74,7 +77,9 @@ public enum ToolsetLogger {
     */
     public void log(String format, Object...args) {
         check();
-        stream.printf("[wix] " + format, args);
+        String line = String.format(format, args);
+        checkForErrors(line);
+        stream.printf("[wix] " + line);
         stream.println();
         stream.flush();
     }
@@ -95,10 +100,27 @@ public enum ToolsetLogger {
     public void debug(String format, Object...args) {
         if (debugEnabled) {
             check();
-            stream.printf("[wix] " + format, args);
+            String line = String.format(format, args);
+            checkForErrors(line);
+            stream.printf("[wix] " + line);
             stream.println();
             stream.flush();
         }
+    }
+    
+    /**
+     * checks if output contains information about errors.
+     * @param line output line from process.
+     * @return true if errors are found.
+     */
+    private void checkForErrors(String line) {
+        if (line.toLowerCase().matches(".*error.*")) {
+        	errorCount++;
+        }
+    }
+    
+    public boolean hasErrors() {
+    	return errorCount > 0;
     }
     
     /**
@@ -108,5 +130,14 @@ public enum ToolsetLogger {
         if (null == stream) {
             stream = new PrintStream(new FileOutputStream(FileDescriptor.out));
         }
+    }
+    
+    /**
+     * Returns stream for injection into Jenkins ProcessLauncher.
+     * @return
+     */
+    public OutputStream getStream() {
+    	check();
+    	return stream;
     }
 }
