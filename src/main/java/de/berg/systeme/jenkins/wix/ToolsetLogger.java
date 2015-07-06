@@ -114,13 +114,14 @@ public enum ToolsetLogger {
      * @return true if errors are found.
      */
     private void checkForErrors(String line) {
-        if (line.toLowerCase().matches(".*error.*")) {
+    	// test if candle or light reported an error
+        if (line.toLowerCase().matches(".*error [A-Z]{4,4}[0-9]{1,4}.*")) {
         	errorCount++;
         }
     }
     
-    public boolean hasErrors() {
-    	return errorCount > 0;
+    public boolean hasNoErrors() {
+    	return errorCount == 0;
     }
     
     /**
