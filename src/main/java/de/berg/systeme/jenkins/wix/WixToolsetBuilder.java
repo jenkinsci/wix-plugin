@@ -158,6 +158,7 @@ public class WixToolsetBuilder extends Builder {
 	      toolset.setArchitecture(arch);
 	      listener.getLogger().println("[wix] " +messages.getString("STARTING_COMPILE_PROCESS"));
 	      FilePath objFile = toolset.compile(sources);
+	      
 	      if (settings.get(Wix.COMPILE_ONLY, false)) {
 	          listener.getLogger().println("[wix] " +messages.getString("SKIPPING_LINK"));
 	      } else {
@@ -167,6 +168,7 @@ public class WixToolsetBuilder extends Builder {
 	          listener.getLogger().println("[wix] " + java.text.MessageFormat.format(java.util.ResourceBundle.getBundle("Messages").getString("LINKING_TO"), new Object[] {outFile}));
 	          toolset.link(objFile, outFile);
 	      }
+	      
 	      build.setResult(Result.SUCCESS);
 	      performedSuccessful = true;
         } catch (ToolsetException e) {

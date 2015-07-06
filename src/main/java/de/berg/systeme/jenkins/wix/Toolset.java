@@ -153,7 +153,7 @@ public final class Toolset {
      * @throws ToolsetException 
      */
     public FilePath compile(FilePath[] input, FilePath output) throws Exception, ToolsetException {
-        FilePath routput = null;
+        //FilePath routput = null;
         // add every source file
         for (FilePath fp : input) {
             if (isValid(fp, ".wxs")) {
@@ -170,19 +170,11 @@ public final class Toolset {
         lg.debug(messages.getString("EXECUTING_COMMAND"), candle.toString());
         if (candle.execute()) {
             lg.log(messages.getString("COMPILING_SUCCESSFUL"));
-            routput = output;
         } else {
             lg.log(messages.getString("COMPILING_FAILED"));
             throw new ToolsetException(messages.getString("COMPILING_FAILED"));
         }
-        return routput;
-    }
-	
-    /***
-     * @deprecated use link(FilePath).
-     */
-    public void link() throws ToolsetException, Exception {
-        throw new UnsupportedOperationException(messages.getString("OPERATION_NO_LONGER_SUPPORTED"));
+        return output;
     }
     
     /***
@@ -219,7 +211,7 @@ public final class Toolset {
      */
     public FilePath link(FilePath[] input, FilePath output) throws Exception, ToolsetException {
         FilePath routput = null;
-        // add every source file
+        // add every object file
         for (FilePath fp : input) {
             if (isValid(fp, ".wixobj")) {
                 lg.debug(messages.getString("ADDING_OBJECT_FILE"), fp.getRemote());
