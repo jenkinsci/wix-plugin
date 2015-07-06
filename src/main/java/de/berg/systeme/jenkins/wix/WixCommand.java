@@ -174,7 +174,11 @@ public abstract class WixCommand {
     
     private FilePath makeRemotePath(FilePath fp) {
     	FilePath tmp = null;
-    	tmp = this.workspace.child(fp.getRemote());
+    	if (this.workspace != null) {
+    		tmp = this.workspace.child(fp.getRemote());
+    	} else {
+    		tmp = fp;
+    	}
     	return tmp;
     }
 
