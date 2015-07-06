@@ -20,12 +20,7 @@
 
 package de.berg.systeme.jenkins.wix;
 
-import hudson.EnvVars;
-import hudson.FilePath;
-
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.InputStreamReader;
 import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -35,6 +30,11 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.apache.commons.lang.StringUtils;
+
+import hudson.EnvVars;
+import hudson.FilePath;
+import hudson.Launcher;
+import hudson.util.ArgumentListBuilder;
 
 /**
  * Abstract class for building commands.
@@ -48,7 +48,7 @@ public abstract class WixCommand {
     // global settings
     protected ToolsetSettings settings;
     // StringBuffer to build command
-    protected StringBuffer cmd = new StringBuffer();
+    //protected StringBuffer cmd = new StringBuffer();
     // List of source files
     protected List<FilePath> sourceFiles = new LinkedList<FilePath>();
     // Map of environment variables
@@ -65,12 +65,14 @@ public abstract class WixCommand {
     protected boolean wxall = false;
     // not accepted environment variables
     protected List<String> rejectedEnvVars = new LinkedList<String>();
-
-    public WixCommand(ToolsetSettings settings, EnvVars vars) {
-        this(null, settings, vars);
-    }
+    // Jenkins Launcher
+    protected Launcher launcher;
+    // Workspace of build job
+    protected FilePath workspace;
+    protected ArgumentListBuilder args;
     
-    public WixCommand(String ExeName, ToolsetSettings settings, EnvVars vars) {
+    public WixCommand(Launcher launcher, String ExeName, ToolsetSettings settings, EnvVars vars) {
+    	this.launcher = launcher;
     	// Bugfix:
     	// It is stated that candle and light will work, if no installation path
     	// is given, so installation path cannot be stated as given. This will
@@ -165,13 +167,23 @@ public abstract class WixCommand {
             lg.log("Environment variables are not automatically added as parameters.");
         }
     }
+    
+    protected void addWorkspace(FilePath workspace) {
+    	this.workspace = workspace;
+    }
+    
+    private FilePath makeRemotePath(FilePath fp) {
+    	FilePath tmp = null;
+    	tmp = this.workspace.child(fp.getRemote());
+    	return tmp;
+    }
 
     /**
      * input file.
      * @param filepath 
      */
     void addSourceFile(FilePath filepath) {
-        sourceFiles.add(filepath);
+        sourceFiles.add(makeRemotePath(filepath));
     }
 
     /**
@@ -198,7 +210,7 @@ public abstract class WixCommand {
      * @param outputFile 
      */
     public void setOutputFile(FilePath outputFile) {
-        this.outputFile = outputFile;
+        this.outputFile = makeRemotePath(outputFile);
     }
 
     /**
@@ -229,7 +241,7 @@ public abstract class WixCommand {
      * create command before execution. createCommand is used by execute().
      * @throws ToolsetException 
      */
-    protected abstract void createCommand() throws ToolsetException;
+    protected abstract ArgumentListBuilder createCommand() throws ToolsetException;
     
     /**
      * Checks if binary exists and toolset is properly installed.
@@ -256,41 +268,6 @@ public abstract class WixCommand {
         return testResult;
     } 
     
-    protected void appendExtensions() {
-        for (String extension : extensions) {
-            cmd.append("-ext ");
-            cmd.append(extension);
-            cmd.append(" ");
-        }
-    }
-    
-    protected void appendParameters() {
-        for(String key : parameters.keySet()) {
-            String value = parameters.get(key);
-            cmd.append("-d");
-            cmd.append(key);
-            cmd.append("=\"");
-            cmd.append(value);
-            cmd.append("\" ");
-        }
-    }
-    
-    protected void appendSources() {
-        for (FilePath source : sourceFiles) {
-            cmd.append("\"");
-            cmd.append(source.getRemote());
-            cmd.append("\" ");
-        }
-    }
-    
-    /**
-     * creates new StringBuffer.
-     */
-    protected void clean() {
-        cmd = null;
-        cmd = new StringBuffer();
-    }
-    
     /**
      * checks if command is properly configured.
      * @throws ToolsetException 
@@ -304,46 +281,42 @@ public abstract class WixCommand {
     }
     
     /**
-     * checks if output contains information about errors.
-     * @param line output line from process.
-     * @return true if errors are found.
-     */
-    private boolean checkForErrors(String line) {
-        return line.toLowerCase().matches(".*error.*");
-    }
-    
-    /**
      * executes command and parses the output checking for errors.
      * @return true if execution was successful otherwise false.
      * @throws Exception
      * @throws ToolsetException 
      */
     public boolean execute() throws Exception, ToolsetException {
-        // false ï¿½berschreibt immer true
         boolean success = true;
-        String line = null;
         
-        this.createCommand();
-
-        Process p = Runtime.getRuntime().exec(cmd.toString());
-        BufferedReader stdout = new BufferedReader(new InputStreamReader(p.getInputStream()));
-        BufferedReader stderr = new BufferedReader(new InputStreamReader(p.getErrorStream()));
-        // Log stdout of executable
-        while ((line = stdout.readLine()) != null) {
-            lg.log(line);
-            success &= checkForErrors(line);
+        try {
+        	ArgumentListBuilder cmd2call = this.createCommand();
+        
+        	if (0 != launcher.launch().envs(parameters)
+        						  .pwd(workspace)
+        						  .stdout(lg.getStream())
+        						  .stderr(lg.getStream())
+        						  .cmds(cmd2call)
+        						  .join()) {
+        		success = false;
+        	}
+        	
+        	success &= lg.hasNoErrors();
+        } catch (Exception e) {
+        	lg.log(e.getMessage());
+        	success = false;
         }
-        stdout.close();
-        // Log stderr of executable
-        while ((line = stderr.readLine()) != null) {
-            lg.log(line);
-            success &= checkForErrors(line);
-        }
-        stderr.close();
-        // Wait for the process to end
-        p.waitFor();
-        success &= (p.exitValue() > 0);
-       
-        return !success;    // inverted logic at this point
+        
+        return success;
+    }
+    
+    public String toString() {
+    	String cmd = "";
+    	try {
+    		cmd = args.toStringWithQuote();
+    	} catch (NullPointerException npe) {
+    		// do nothing
+    	}
+    	return cmd;
     }
 }
