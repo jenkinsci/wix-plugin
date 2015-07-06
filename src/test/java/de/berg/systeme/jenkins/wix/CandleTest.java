@@ -40,7 +40,6 @@ import org.junit.Test;
  */
 public class CandleTest {
 	private static final String DUMMY_INST_PATH = "C:\\Program Files (x86)\\WiX Toolset v3.7\\bin";
-	private static final String SEP = System.getProperty("file.separator");
 	private Candle candle;
     private EnvVars vars;
     private ToolsetSettings settings;
@@ -179,7 +178,7 @@ public class CandleTest {
     
     @Test
     public void testWithFullInstallationPath() {
-    	final String CMD = String.format("\"%s%s%s", DUMMY_INST_PATH, SEP, "candle.exe\" -arch ia64 -nologo -out test.txt test.txt");
+    	final String CMD = String.format("\"%s\\%s", DUMMY_INST_PATH, "candle.exe\" -arch ia64 -nologo -out test.txt test.txt");
     	settings.set(Wix.INST_PATH, DUMMY_INST_PATH);
         try {
             FilePath fp = new FilePath(new File("test.txt"));

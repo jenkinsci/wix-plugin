@@ -39,7 +39,6 @@ import hudson.FilePath;
  */
 public class LightTest {
 	private static final String DUMMY_INST_PATH = "C:\\Program Files (x86)\\WiX Toolset v3.7\\bin";
-    private static final String SEP = System.getProperty("file.separator");
 	private EnvVars vars;
     private ToolsetSettings settings;
     private Light light;
@@ -136,7 +135,7 @@ public class LightTest {
     
     @Test
     public void testWithFullInstallationPath() {
-    	final String CMD = String.format("\"%s%s%s", DUMMY_INST_PATH, SEP, "light.exe\" -nologo -out test.txt test.txt");
+    	final String CMD = String.format("\"%s\\%s", DUMMY_INST_PATH, "light.exe\" -nologo -out test.txt test.txt");
     	settings.set(Wix.INST_PATH, DUMMY_INST_PATH);
         try {
             FilePath fp = new FilePath(new File("test.txt"));
