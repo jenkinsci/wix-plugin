@@ -123,7 +123,7 @@ public class WixToolsetBuilder extends Builder {
 	///////////////////////// End of Getter section ////////////////////////////
 	
 	@Override
-    public boolean perform(AbstractBuild build, Launcher launcher, BuildListener listener) {
+    public boolean perform(@SuppressWarnings("rawtypes") AbstractBuild build, Launcher launcher, BuildListener listener) {
         // At this point we also have to check the global variables again
         settings.set(Wix.INST_PATH, getDescriptor().getInstPath());
     	settings.set(Wix.DEBUG_ENBL, getDescriptor().getEnableDebug());
@@ -131,7 +131,9 @@ public class WixToolsetBuilder extends Builder {
         settings.set(Wix.ENBL_ENV_AS_PARAM, getDescriptor().getEnableVars());
         settings.set(Wix.USED_ON_SLAVE, getDescriptor().getUsedOnSlave());
         
-	boolean performedSuccessful = false;
+        final FilePath workspace = build.getWorkspace();
+        
+        boolean performedSuccessful = false;
         final String instPath = settings.get(Wix.INST_PATH, "");
         final boolean debugEnabled = Boolean.valueOf(settings.get(Wix.DEBUG_ENBL, "false"));
     	
@@ -147,12 +149,11 @@ public class WixToolsetBuilder extends Builder {
 	      listener.getLogger().println("[wix] " +messages.getString("DETECTING_ENVIRONMENT_VARIABLES"));
 	      EnvVars envVars = build.getEnvironment(listener);
 	
-	      //FilePath sourceFile = new FilePath(build.getWorkspace(), getSources());
-	      FilePath[] sources = build.getWorkspace().list(getSources());
+	      FilePath[] sources = workspace.list(getSources());
 	      listener.getLogger().println("[wix] " +java.text.MessageFormat.format(java.util.ResourceBundle.getBundle("Messages").getString("FOUND_SOURCES"), new Object[] {sources.length}));
 	
 	      listener.getLogger().println("[wix] " +messages.getString("INITIALIZING_TOOLS"));
-	      Toolset toolset = new Toolset(settings, envVars);
+	      Toolset toolset = new Toolset(build, launcher, settings);
 	      // add architecture for compiler
 	      toolset.setArchitecture(arch);
 	      listener.getLogger().println("[wix] " +messages.getString("STARTING_COMPILE_PROCESS"));
@@ -162,7 +163,7 @@ public class WixToolsetBuilder extends Builder {
 	      } else {
 	          String output = settings.get(Wix.MSI_PKG, Wix.MSI_PKG_DEFAULT_NAME);
 	          output = envVars.expand(output);
-	          FilePath outFile = new FilePath(build.getWorkspace(), output);
+	          FilePath outFile = new FilePath(workspace, output);
 	          listener.getLogger().println("[wix] " + java.text.MessageFormat.format(java.util.ResourceBundle.getBundle("Messages").getString("LINKING_TO"), new Object[] {outFile}));
 	          toolset.link(objFile, outFile);
 	      }

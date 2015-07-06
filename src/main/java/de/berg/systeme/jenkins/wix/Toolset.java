@@ -19,12 +19,14 @@
 */
 package de.berg.systeme.jenkins.wix;
 
-import hudson.EnvVars;
-import hudson.FilePath;
-
 import java.io.File;
 import java.io.IOException;
 import java.util.ResourceBundle;
+
+import hudson.EnvVars;
+import hudson.FilePath;
+import hudson.Launcher;
+import hudson.model.AbstractBuild;
 
 /***
  * <p>Toolset checks the existence for the WIX Toolset on the buildsystem. If not available
@@ -46,43 +48,39 @@ public final class Toolset {
     // Logging instance
     private final ToolsetLogger lg = ToolsetLogger.INSTANCE;
     // global setting
-    private final ToolsetSettings settings;
+    private ToolsetSettings settings;
     // Windows slave mode
     private boolean usedOnSlave = false;
-
-    /**
-     * constructor with global settings.
-     * @param properties global settings.
-     * @throws ToolsetException 
-     */
-    public Toolset(ToolsetSettings properties) throws ToolsetException {
-        this(properties, new EnvVars());
+    
+    @SuppressWarnings("rawtypes")
+    public Toolset(AbstractBuild build, Launcher launcher, ToolsetSettings properties) throws ToolsetException {
+    	try {
+			// initialize globals
+			this.settings   = properties;
+			this.envVars    = build.getEnvironment();
+			// initialize commands
+			this.candle     = new Candle(launcher, this.settings, this.envVars);
+			this.light      = new Light(launcher, this.settings, this.envVars);
+			usedOnSlave		= properties.get(Wix.USED_ON_SLAVE, false);
+			
+			this.candle.addWorkspace(build.getWorkspace());
+			this.light.addWorkspace(build.getWorkspace());
+			
+			// check
+			if (usedOnSlave) {
+				lg.log("Wix Toolset plugin is running in slave mode.");
+				lg.log("Do not test if toolset is installed.");
+			} else {
+				lg.log(this.candle.exists() ? messages.getString("COMPILER_FOUND") : messages.getString("COMPILER_NOT_FOUND"));
+				lg.log(this.light.exists() ? messages.getString("LINKER_FOUND") : messages.getString("LINKER_NOT_FOUND"));
+			}
+		} catch (IOException e) {
+			lg.log(e.getMessage());
+		} catch (InterruptedException e) {
+			lg.log(e.getMessage());
+		}
     }
     
-    /**
-     * constructor with global settings and environment variables.
-     * @param properties global settings.
-     * @param vars environment variables.
-     * @throws ToolsetException 
-     */
-    public Toolset(ToolsetSettings properties, EnvVars vars) throws ToolsetException {
-        // initialize globals
-        this.settings   = properties;
-        this.envVars    = vars;
-        // initialize commands
-        this.candle     = new Candle(this.settings, this.envVars);
-        this.light      = new Light(this.settings, this.envVars);
-        usedOnSlave		= properties.get(Wix.USED_ON_SLAVE, false);
-        
-        // check
-        if (usedOnSlave) {
-        	lg.log("Wix Toolset plugin is running in slave mode.");
-    		lg.log("Do not test if toolset is installed.");
-        } else {
-        	lg.log(this.candle.exists() ? messages.getString("COMPILER_FOUND") : messages.getString("COMPILER_NOT_FOUND"));
-        	lg.log(this.light.exists() ? messages.getString("LINKER_FOUND") : messages.getString("LINKER_NOT_FOUND"));
-        }
-    }
     
     /**
      * Replaces the file extension of a given file and returns a new FilePath
