@@ -103,8 +103,9 @@ public final class Toolset {
      * @return true if file path is valid.
      */
     private boolean isValid(FilePath fp, String fext) {
-        boolean valid = false;
+        boolean valid = true;
         try {
+        	lg.debug("isValid: " + fp.getRemote());
             valid = fp.getRemote().endsWith(fext) && fp.exists();
         } catch (IOException ex) {
             lg.log(ex.getMessage());
