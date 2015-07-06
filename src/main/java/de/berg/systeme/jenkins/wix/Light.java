@@ -21,6 +21,9 @@
 package de.berg.systeme.jenkins.wix;
 
 import hudson.EnvVars;
+import hudson.FilePath;
+import hudson.Launcher;
+import hudson.util.ArgumentListBuilder;
 
 /**
  * command definition for Wix Toolset Linker (light.exe)
@@ -33,7 +36,16 @@ class Light extends WixCommand {
      * @param envVars environment variables.
      */
     public Light(ToolsetSettings settings, EnvVars envVars) {
-        super(Wix.LINKER, settings, envVars);
+        this(null, settings, envVars);
+    }
+    
+    /**
+     * constructor.
+     * @param settings global settings.
+     * @param envVars environment variables.
+     */
+    public Light(Launcher launcher, ToolsetSettings settings, EnvVars envVars) {
+        super(launcher, Wix.LINKER, settings, envVars);
     }
 
     /**
@@ -41,32 +53,37 @@ class Light extends WixCommand {
      * @throws ToolsetException 
      */
     @Override
-    protected void createCommand() throws ToolsetException {
+    protected ArgumentListBuilder createCommand() throws ToolsetException {
         // the light.exe command on command line looks like:
         // light.exe [-?] [-b bindPath] [-nologo] [-out outputFile] objectFile [objectFile ...]
-        clean();    // create a new StringBuffer
-        check();    // check if cmd was still created
+        //clean();    // create a new StringBuffer
+        //check();    // check if cmd was still created
+    	
+    	args = new ArgumentListBuilder();
+    	try {
+	    	args.add(exec.getPath());	// candle.exe
+	    	// append extensions
+	    	for (String extension : extensions) {
+	            args.add("-ext").add(extension);
+	        }
+	    	// append parameters
+	    	for(String key : parameters.keySet()) {
+	            String value = parameters.get(key);
+	            args.addKeyValuePair("-d", key, value, true);
+	        }
+	    	args.add(nologo ? "-nologo" : null);
+	    	args.add(verbose ? "-v" : null);
+	        args.add(wxall ? "-wxall" : null);
+	        // output file
+	        args.add("-out").add(outputFile.getRemote());
+	        // append sources
+	        for (FilePath source : sourceFiles) {
+	            args.add(source.getRemote());
+	        }
+	    } catch (NullPointerException npe) {
+			throw new ToolsetException("Missing parameters to build statement.");
+		}
         
-        cmd.append("\"");
-        cmd.append(exec.getPath());     // light.exe
-        cmd.append("\"");
-        cmd.append(" ");
-        appendExtensions();                     // append extensions
-        appendParameters();                     // append parameters
-        // no we are coming to true/false parameters
-        cmd.append(nologo ? "-nologo " : "");
-        cmd.append(verbose ? "-v " : "");
-        cmd.append(wxall ? "-wxall " : "");
-        // add output file
-        cmd.append("-out \"");
-        cmd.append(outputFile.getRemote());
-        cmd.append("\" ");
-        // append all available object files
-        appendSources();
-    }
-    
-    @Override
-    public String toString() {
-        return cmd.toString();
+        return args;
     }
 }

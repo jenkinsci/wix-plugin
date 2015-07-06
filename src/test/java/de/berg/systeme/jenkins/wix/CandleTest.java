@@ -64,7 +64,7 @@ public class CandleTest {
      */
     @Test
     public void testSetArch() {
-        final String CMD = "\"candle.exe\" -arch ia64 -nologo -out \"test.txt\" \"test.txt\" ";
+        final String CMD = "candle.exe -arch ia64 -nologo -out test.txt test.txt";
         try {
             FilePath fp = new FilePath(new File("test.txt"));
             candle = new Candle(settings, vars);
@@ -83,7 +83,7 @@ public class CandleTest {
      */
     @Test
     public void testAddIncludePath() {
-        final String CMD = "\"candle.exe\" -arch x86 -I \"include\" -nologo -out \"test.txt\" \"test.txt\" ";
+        final String CMD = "candle.exe -arch x86 -I include -nologo -out test.txt test.txt";
         try {
             FilePath fp = new FilePath(new File("test.txt"));
             FilePath inc = new FilePath(new File("include"));
@@ -127,7 +127,7 @@ public class CandleTest {
      */
     @Test
     public void testCreateCommand_withSources() {
-        final String CMD = "\"candle.exe\" -arch x86 -nologo -out \"test.txt\" \"test.txt\" ";
+        final String CMD = "candle.exe -arch x86 -nologo -out test.txt test.txt";
         try {
             FilePath fp = new FilePath(new File("test.txt"));
             candle = new Candle(settings, vars);
@@ -161,7 +161,7 @@ public class CandleTest {
      */
     @Test
     public void testCreateCommand_complete() {
-        final String CMD = "\"candle.exe\" -arch x86 -ext MyExtension -dvar_key=\"var_name\" -nologo -out \"output.txt\" \"input.txt\" ";
+        final String CMD = "candle.exe -arch x86 -ext MyExtension -dvar_key=var_name -nologo -out output.txt input.txt";
         try {
             FilePath input = new FilePath(new File("input.txt"));
             FilePath output = new FilePath(new File("output.txt"));
@@ -179,7 +179,7 @@ public class CandleTest {
     
     @Test
     public void testWithFullInstallationPath() {
-    	final String CMD = String.format("\"%s%s%s", DUMMY_INST_PATH, SEP, "candle.exe\" -arch ia64 -nologo -out \"test.txt\" \"test.txt\" ");
+    	final String CMD = String.format("\"%s%s%s", DUMMY_INST_PATH, SEP, "candle.exe\" -arch ia64 -nologo -out test.txt test.txt");
     	settings.set(Wix.INST_PATH, DUMMY_INST_PATH);
         try {
             FilePath fp = new FilePath(new File("test.txt"));

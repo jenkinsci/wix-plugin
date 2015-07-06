@@ -74,7 +74,7 @@ public class LightTest {
      */
     @Test
     public void testCreateCommand_withSources() {
-        final String CMD = "\"light.exe\" -nologo -out \"test.txt\" \"test.txt\" ";
+        final String CMD = "light.exe -nologo -out test.txt test.txt";
         try {
             FilePath fp = new FilePath(new File("test.txt"));
             light = new Light(settings, vars);
@@ -108,7 +108,7 @@ public class LightTest {
      */
     @Test
     public void testCreateCommand_complete() {
-        final String CMD = "\"light.exe\" -ext MyExtension -dvar_key=\"var_name\" -nologo -out \"output.txt\" \"input.txt\" ";
+        final String CMD = "light.exe -ext MyExtension -dvar_key=var_name -nologo -out output.txt input.txt";
         try {
             FilePath input = new FilePath(new File("input.txt"));
             FilePath output = new FilePath(new File("output.txt"));
@@ -136,7 +136,7 @@ public class LightTest {
     
     @Test
     public void testWithFullInstallationPath() {
-    	final String CMD = String.format("\"%s%s%s", DUMMY_INST_PATH, SEP, "light.exe\" -nologo -out \"test.txt\" \"test.txt\" ");
+    	final String CMD = String.format("\"%s%s%s", DUMMY_INST_PATH, SEP, "light.exe\" -nologo -out test.txt test.txt");
     	settings.set(Wix.INST_PATH, DUMMY_INST_PATH);
         try {
             FilePath fp = new FilePath(new File("test.txt"));

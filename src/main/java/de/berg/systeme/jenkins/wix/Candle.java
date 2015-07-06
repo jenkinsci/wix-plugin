@@ -20,11 +20,13 @@
 
 package de.berg.systeme.jenkins.wix;
 
-import hudson.EnvVars;
-import hudson.FilePath;
-
 import java.util.LinkedList;
 import java.util.List;
+
+import hudson.EnvVars;
+import hudson.FilePath;
+import hudson.Launcher;
+import hudson.util.ArgumentListBuilder;
 
 /**
  * Wix Command definition for Windows Installer Xml Compiler (candle.exe).
@@ -42,7 +44,16 @@ public class Candle extends WixCommand {
      * @param vars environment variables.
      */
     public Candle(ToolsetSettings settings, EnvVars vars) {
-        super(Wix.COMPILER, settings, vars);
+        this(null, settings, vars);
+    }
+    
+    /**
+     * constructor.
+     * @param settings global settings.
+     * @param vars environment variables.
+     */
+    public Candle(Launcher launcher, ToolsetSettings settings, EnvVars vars) {
+        super(launcher, Wix.COMPILER, settings, vars);
     }
     
     /**
@@ -62,47 +73,42 @@ public class Candle extends WixCommand {
     }
 
     @Override
-    public String toString() {
-        return cmd.toString();
-    }
-    
-    /**
-     * helper to build command and append include directives.
-     */
-    private void appendIncludes() {
-        for (FilePath path : includePaths) {
-            cmd.append("-I \"");
-            cmd.append(path.getRemote());
-            cmd.append("\" ");
-        }
-    }
-
-    @Override
-    protected void createCommand() throws ToolsetException {
+    protected ArgumentListBuilder createCommand() throws ToolsetException {
         // the candle.exe command on command line looks like:
         // candle.exe [-?] [-nologo] [-out outputFile] sourceFile [sourceFile ...]
-        clean();    // create a new StringBuffer
-        check();    // check if cmd was still created
-        
-        cmd.append("\"");
-        cmd.append(exec.getPath());     // candle.exe
-        cmd.append("\"");
-        cmd.append(" ");
-        cmd.append("-arch ");
-        cmd.append(arch.name());                // architecture
-        cmd.append(" ");
-        appendExtensions();                     // append extensions
-        appendParameters();                     // append parameters
-        appendIncludes();                       // append include paths
-        // no we are coming to true/false parameters
-        cmd.append(nologo ? "-nologo " : "");
-        cmd.append(verbose ? "-v " : "");
-        cmd.append(wxall ? "-wxall " : "");
-        // add output file
-        cmd.append("-out \"");
-        cmd.append(outputFile.getRemote());
-        cmd.append("\" ");
-        // append all available source files
-        appendSources();
+        //clean();    // create a new StringBuffer
+        //check();    // check if cmd was still created
+    	
+    	args = new ArgumentListBuilder();
+    	try {
+	    	args.add(exec.getPath());	// candle.exe
+	    	args.add("-arch").add(arch.name());
+	    	// append extensions
+	    	for (String extension : extensions) {
+	            args.add("-ext").add(extension);
+	        }
+	    	// append parameters
+	    	for(String key : parameters.keySet()) {
+	            String value = parameters.get(key);
+	            args.addKeyValuePair("-d", key, value, true);
+	        }
+	    	// append includes
+	    	for (FilePath path : includePaths) {
+	            args.add("-I").add(path.getRemote());
+	        }
+	    	args.add(nologo ? "-nologo" : null);
+	    	args.add(verbose ? "-v" : null);
+	        args.add(wxall ? "-wxall" : null);
+	        // output file
+	        args.add("-out").add(outputFile.getRemote());
+	        // append sources
+	        for (FilePath source : sourceFiles) {
+	            args.add(source.getRemote());
+	        }
+    	} catch (NullPointerException npe) {
+    		throw new ToolsetException("Missing parameters to build statement.");
+    	}
+    	
+    	return args;
     }
 }
