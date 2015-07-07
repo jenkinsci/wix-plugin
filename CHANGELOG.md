@@ -2,6 +2,13 @@ ChangeLog
 =========
 Changelog between all revisions of WiX Toolset plugin for Jenkins.
 
+Changes between Wix Toolset plugin 1.10 and 1.11
+------------------------------------------------
+Released on: 2015-07-08
+
+Release 1.11 is a major bugfix release due to problems with running Wix Toolset on a Windows slave:
+- #5: The commands calling candle.exe and light.exe are now using supporting Jenkins remote path and the native Jenkins Launcher for remote processes. A lot of thanks go to @pulphix who tested and tested and tested...
+
 Changes between Wix Toolset plugin 1.9 and 1.10
 -----------------------------------------------
 Released on: 2015-07-02
@@ -34,7 +41,7 @@ Changes between Wix Toolset plugin 1.7 and 1.8
 Released on: 2014-09-29
 
 ### Minor changes
-* Added french translation. Thanks to _mildis_.
+* Added french translation. Thanks to _@mildis_.
 * Added new help file for MSI Output.
 * MSI Output can be also an executable (*.exe) if used together with bootstrapper.
 * Some minor refactoring.
