@@ -81,7 +81,6 @@ public final class Toolset {
 		}
     }
     
-    
     /**
      * Replaces the file extension of a given file and returns a new FilePath
      * with the new extension.
@@ -155,7 +154,6 @@ public final class Toolset {
      * @throws ToolsetException 
      */
     public FilePath compile(FilePath[] input, FilePath output) throws Exception, ToolsetException {
-        //FilePath routput = null;
         // add every source file
         for (FilePath fp : input) {
             if (isValid(fp, ".wxs")) {
@@ -176,7 +174,7 @@ public final class Toolset {
             lg.log(messages.getString("COMPILING_FAILED"));
             throw new ToolsetException(messages.getString("COMPILING_FAILED"));
         }
-        return output;
+        return candle.getOutputFile();
     }
     
     /***
@@ -212,7 +210,6 @@ public final class Toolset {
      * @throws ToolsetException 
      */
     public FilePath link(FilePath[] input, FilePath output) throws Exception, ToolsetException {
-        FilePath routput = null;
         // add every object file
         for (FilePath fp : input) {
             if (isValid(fp, ".wixobj")) {
@@ -229,13 +226,12 @@ public final class Toolset {
         lg.debug(messages.getString("EXECUTING_COMMAND"), light.toString());
         if (light.execute()) {
             lg.log(messages.getString("LINKING_SUCCESSFUL"));
-            routput = output;
         } else {
             lg.log(messages.getString("LINKING_FAILED"));
             throw new ToolsetException(messages.getString("LINKING_FAILED"));
         }
         
-        return routput;
+        return light.getOutputFile();
     }
     
     /**
