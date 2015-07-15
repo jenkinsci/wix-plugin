@@ -104,8 +104,6 @@ public final class Toolset {
     private boolean isValid(FilePath fp, String fext) {
         boolean valid = true;
         try {
-        	lg.debug("isValid: " + fp.getRemote());
-        	lg.debug("isValid: " + (fp.exists() ? "true" : "false"));
             valid = fp.getRemote().endsWith(fext) && fp.exists();
         } catch (IOException ex) {
             lg.log(ex.getMessage());
