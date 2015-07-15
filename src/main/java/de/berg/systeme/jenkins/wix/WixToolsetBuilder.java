@@ -176,19 +176,19 @@ public class WixToolsetBuilder extends Builder {
             build.setResult(settings.get(Wix.MARK_UNSTABLE, false) ? Result.UNSTABLE : Result.FAILURE);
             performedSuccessful = true;
         } catch (NullPointerException e) {
-            listener.getLogger().println("[wix] " +e.getMessage());
+            listener.getLogger().println("[wix] " + e.getMessage());
             build.setResult(settings.get(Wix.MARK_UNSTABLE, false) ? Result.UNSTABLE : Result.FAILURE);
             performedSuccessful = true;
         } catch (IOException e) {
-            listener.getLogger().println("[wix] " +e.getMessage());
+            listener.getLogger().println("[wix] " + e.getMessage());
             build.setResult(settings.get(Wix.MARK_UNSTABLE, false) ? Result.UNSTABLE : Result.FAILURE);
             performedSuccessful = false;
         } catch (InterruptedException e) {
-            listener.getLogger().println("[wix] " +e.getMessage());
+            listener.getLogger().println("[wix] " + e.getMessage());
             build.setResult(settings.get(Wix.MARK_UNSTABLE, false) ? Result.UNSTABLE : Result.FAILURE);
             performedSuccessful = false;
         } catch (Exception ex) {
-            listener.getLogger().println("[wix] " +ex.getMessage());
+            listener.getLogger().println("[wix] " + ex.getMessage());
             build.setResult(settings.get(Wix.MARK_UNSTABLE, false) ? Result.UNSTABLE : Result.FAILURE);
             performedSuccessful = false;
         }
