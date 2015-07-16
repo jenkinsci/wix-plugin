@@ -145,6 +145,7 @@ public abstract class WixCommand {
             for (Map.Entry<String,String> entry : vars.entrySet()) {
                 String varName = entry.getKey();
                 String value = entry.getValue();
+                lg.debug("VarName: " + varName + "; Value: " + value);
                 // contains value a directory it is better to escape everything
                 if (isEnvVarRejected(varName, value)) {
                     lg.debug("Rejected Environment variable: " + varName);
@@ -157,7 +158,7 @@ public abstract class WixCommand {
 	                    char lastChar = value.charAt(value.length() - 1);
 	                    if (lastChar == '\\') { value += "\\"; }
                 	}
-                    lg.debug("VarName: " + varName + "; Value: " + value);
+                    
                     addParameter(varName, value); 
                 }
             }
@@ -314,7 +315,7 @@ public abstract class WixCommand {
         	
         	success &= lg.hasNoErrors();
         } catch (Exception e) {
-        	lg.log(e.getMessage());
+        	lg.severe(e);
         	success = false;
         }
         

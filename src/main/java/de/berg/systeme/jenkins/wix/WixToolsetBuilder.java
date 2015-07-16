@@ -19,6 +19,11 @@
 */
 package de.berg.systeme.jenkins.wix;
 
+import java.io.IOException;
+import java.util.ResourceBundle;
+
+import org.kohsuke.stapler.DataBoundConstructor;
+
 import hudson.EnvVars;
 import hudson.FilePath;
 import hudson.Launcher;
@@ -26,9 +31,6 @@ import hudson.model.AbstractBuild;
 import hudson.model.BuildListener;
 import hudson.model.Result;
 import hudson.tasks.Builder;
-import java.io.IOException;
-import java.util.ResourceBundle;
-import org.kohsuke.stapler.DataBoundConstructor;
 
 /**
  * WIXToolset {@link Builder}.
@@ -46,6 +48,7 @@ public class WixToolsetBuilder extends Builder {
     private final String msiOutput;
     private final String arch;
     private final ToolsetSettings settings;
+    private final ToolsetLogger lg = ToolsetLogger.INSTANCE;
     
     // Fields in config.jelly must match the parameter names in the "DataBoundConstructor"
     @DataBoundConstructor
@@ -138,12 +141,14 @@ public class WixToolsetBuilder extends Builder {
         final boolean debugEnabled = Boolean.valueOf(settings.get(Wix.DEBUG_ENBL, "false"));
     	
         try {
+        	// initialize our own logger
+        	ToolsetLogger.INSTANCE.init(listener.getLogger(), debugEnabled);
 	    	if (instPath == null || "".equals(instPath)) {
 	            listener.getLogger().println("[wix] " + messages.getString("EXPECTING_IN_PATH"));
 	    	}
-	      // initialize our own logger
+	      
 	      listener.getLogger().println("[wix] " +java.text.MessageFormat.format(java.util.ResourceBundle.getBundle("Messages").getString("ENABLE_DEBUG"), new Object[] {debugEnabled}));
-	      ToolsetLogger.INSTANCE.init(listener.getLogger(), debugEnabled);
+	      
 	
 	      // get all environment variables
 	      listener.getLogger().println("[wix] " +messages.getString("DETECTING_ENVIRONMENT_VARIABLES"));
@@ -172,23 +177,28 @@ public class WixToolsetBuilder extends Builder {
 	      build.setResult(Result.SUCCESS);
 	      performedSuccessful = true;
         } catch (ToolsetException e) {
-            listener.getLogger().println("[wix] " + e.getMessage());
+            listener.getLogger().println("[wix] ToolsetException: " + e.getMessage());
+        	lg.severe(e);
             build.setResult(settings.get(Wix.MARK_UNSTABLE, false) ? Result.UNSTABLE : Result.FAILURE);
             performedSuccessful = true;
         } catch (NullPointerException e) {
-            listener.getLogger().println("[wix] " +e.getMessage());
+            listener.getLogger().println("[wix] NPE: " + e.getMessage());
+        	lg.severe(e);
             build.setResult(settings.get(Wix.MARK_UNSTABLE, false) ? Result.UNSTABLE : Result.FAILURE);
             performedSuccessful = true;
         } catch (IOException e) {
-            listener.getLogger().println("[wix] " +e.getMessage());
+            listener.getLogger().println("[wix] IOException: " + e.getMessage());
+        	lg.severe(e);
             build.setResult(settings.get(Wix.MARK_UNSTABLE, false) ? Result.UNSTABLE : Result.FAILURE);
             performedSuccessful = false;
         } catch (InterruptedException e) {
-            listener.getLogger().println("[wix] " +e.getMessage());
+            listener.getLogger().println("[wix] InterruptedException: " + e.getMessage());
+        	lg.severe(e);
             build.setResult(settings.get(Wix.MARK_UNSTABLE, false) ? Result.UNSTABLE : Result.FAILURE);
             performedSuccessful = false;
         } catch (Exception ex) {
-            listener.getLogger().println("[wix] " +ex.getMessage());
+            listener.getLogger().println("[wix] Exception: " + ex.getMessage());
+        	lg.severe(ex);
             build.setResult(settings.get(Wix.MARK_UNSTABLE, false) ? Result.UNSTABLE : Result.FAILURE);
             performedSuccessful = false;
         }

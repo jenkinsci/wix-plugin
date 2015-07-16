@@ -75,9 +75,9 @@ public final class Toolset {
 				lg.log(this.light.exists() ? messages.getString("LINKER_FOUND") : messages.getString("LINKER_NOT_FOUND"));
 			}
 		} catch (IOException e) {
-			lg.log(e.getMessage());
+			lg.severe(e);
 		} catch (InterruptedException e) {
-			lg.log(e.getMessage());
+			lg.severe(e);
 		}
     }
     
@@ -108,10 +108,10 @@ public final class Toolset {
         	lg.debug("isValid: " + (fp.exists() ? "true" : "false"));
             valid = fp.getRemote().endsWith(fext) && fp.exists();
         } catch (IOException ex) {
-            lg.log(ex.getMessage());
+            lg.severe(ex);
             valid = false;
         } catch (InterruptedException ex) {
-            lg.log(ex.getMessage());
+            lg.severe(ex);
             valid = false;
         }
         return valid;

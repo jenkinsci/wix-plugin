@@ -58,6 +58,7 @@ public final class WixDescriptorImpl extends BuildStepDescriptor<Builder> {
   private boolean enableVars = false;
   private boolean usedOnSlave = false;
   private String rejectedVars = Wix.DEF_LOV_TO_REJECT;
+  private static final ToolsetLogger lg = ToolsetLogger.INSTANCE;
 
   public WixDescriptorImpl() {
     super(WixToolsetBuilder.class);
@@ -175,7 +176,7 @@ public final class WixDescriptorImpl extends BuildStepDescriptor<Builder> {
             this.enableVars = false;
         }
     } catch (Exception e) {
-        System.out.println(e);
+        lg.severe(e);
     } finally {
         save();
     }
