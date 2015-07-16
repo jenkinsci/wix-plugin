@@ -63,6 +63,20 @@ public enum ToolsetLogger {
     }
     
     /**
+     * Logs an exception including stacktrace.
+     * @param t Exception thrown.
+     */
+    public void severe (Class<?> clz, Throwable t) {
+    	check();
+    	stream.printf("[wix] SEVERE: %s", t.getMessage());
+    	stream.println();
+    	stream.printf("[wix] Stacktrace follows:");
+    	stream.println();
+    	t.printStackTrace(stream);
+    	stream.flush();
+    }
+    
+    /**
      * logs a simple message.
      * @param msg message string.
      */
