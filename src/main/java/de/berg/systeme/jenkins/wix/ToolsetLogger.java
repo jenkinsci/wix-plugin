@@ -70,8 +70,7 @@ public enum ToolsetLogger {
     	check();
     	stream.printf("[wix] SEVERE: %s", t.getMessage());
     	stream.println();
-    	stream.printf("[wix] Stacktrace follows:");
-    	stream.println();
+    	stream.println("[wix] Stacktrace follows:");
     	t.printStackTrace(stream);
     	stream.flush();
     }
@@ -93,8 +92,7 @@ public enum ToolsetLogger {
         check();
         String line = String.format(format, args);
         checkForErrors(line);
-        stream.printf("[wix] " + line);
-        stream.println();
+        stream.println("[wix] " + line);
         stream.flush();
     }
     
@@ -116,8 +114,7 @@ public enum ToolsetLogger {
             check();
             String line = String.format(format, args);
             checkForErrors(line);
-            stream.printf("[wix] " + line);
-            stream.println();
+            stream.println("[wix] " + line);
             stream.flush();
         }
     }

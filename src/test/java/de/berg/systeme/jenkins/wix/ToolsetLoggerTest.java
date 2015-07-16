@@ -151,4 +151,18 @@ public class ToolsetLoggerTest {
            fail(e.getMessage());
        }
     }
+    
+    @Test
+    public void testWith_Percent() {
+    	// Strings containing a % can crash printf
+    	String msg = "VarName: Variable; Value: %P";
+    	try {
+            lg.init(stream, true);
+            lg.debug(msg);
+        } catch(Exception e) {
+        	// Hopefully does not throw 
+        	// java.util.UnknownFormatConversionException: Conversion = 'P'
+            fail(e.getMessage());
+        }
+    }
 }
