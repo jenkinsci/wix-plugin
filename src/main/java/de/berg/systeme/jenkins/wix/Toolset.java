@@ -57,7 +57,7 @@ public final class Toolset {
     	try {
 			// initialize globals
 			this.settings   = properties;
-			this.envVars    = build.getEnvironment();
+			this.envVars    = build.getEnvironment( launcher.getListener() );
 			// initialize commands
 			this.candle     = new Candle(launcher, this.settings, this.envVars);
 			this.light      = new Light(launcher, this.settings, this.envVars);
