@@ -10,9 +10,9 @@ You have to download and install the freely available SDK before you can use thi
 Bugs and Changes
 ----------------
 If you would like to see new features or found a bug, you can use several ways to file the enhancement or bug:
-- Use the (Github issue tracker) [https://github.com/jenkinsci/wix-plugin/issues]
-- Use the (official Jenkins issue tracker) [https://wiki.jenkins-ci.org/display/JENKINS/Issue+Tracking]
-- Send a message to (Jenkins development mailing list) [https://jenkins-ci.org/content/mailing-lists]
+- Use the [Github issue tracker] (https://github.com/jenkinsci/wix-plugin/issues)
+- Use the [official Jenkins issue tracker] (https://wiki.jenkins-ci.org/display/JENKINS/Issue+Tracking)
+- Send a message to [Jenkins development mailing list] (https://jenkins-ci.org/content/mailing-lists)
 - Send a mail to _rollin dot hand at gmx dot de_
 
 
