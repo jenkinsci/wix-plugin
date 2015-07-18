@@ -48,7 +48,7 @@ public class WixToolsetBuilder extends Builder {
     private final String msiOutput;
     private final String arch;
     private final ToolsetSettings settings;
-    private final ToolsetLogger lg = ToolsetLogger.INSTANCE;
+    private static final ToolsetLogger lg = ToolsetLogger.INSTANCE;;
     
     // Fields in config.jelly must match the parameter names in the "DataBoundConstructor"
     @DataBoundConstructor
@@ -142,48 +142,47 @@ public class WixToolsetBuilder extends Builder {
     	
         try {
         	// initialize our own logger
-        	ToolsetLogger.INSTANCE.init(listener.getLogger(), debugEnabled);
+        	lg.init(listener.getLogger(), debugEnabled);
 	    	if (instPath == null || "".equals(instPath)) {
-	            listener.getLogger().println("[wix] " + messages.getString("EXPECTING_IN_PATH"));
+	            lg.log( messages.getString("EXPECTING_IN_PATH") );
 	    	}
 	      
-	      listener.getLogger().println("[wix] " +java.text.MessageFormat.format(java.util.ResourceBundle.getBundle("Messages").getString("ENABLE_DEBUG"), new Object[] {debugEnabled}));
+	      lg.log(java.text.MessageFormat.format(java.util.ResourceBundle.getBundle("Messages").getString("ENABLE_DEBUG"), new Object[] {debugEnabled}));
 	      
-	
 	      // get all environment variables
-	      listener.getLogger().println("[wix] " +messages.getString("DETECTING_ENVIRONMENT_VARIABLES"));
+	      lg.log( messages.getString("DETECTING_ENVIRONMENT_VARIABLES") );	      
 	      EnvVars envVars = build.getEnvironment(listener);
 	
 	      FilePath[] sources = workspace.list(getSources());
-	      listener.getLogger().println("[wix] " +java.text.MessageFormat.format(java.util.ResourceBundle.getBundle("Messages").getString("FOUND_SOURCES"), new Object[] {sources.length}));
+	      lg.log(java.text.MessageFormat.format(java.util.ResourceBundle.getBundle("Messages").getString("FOUND_SOURCES"), new Object[] {sources.length}));
 	
-	      listener.getLogger().println("[wix] " +messages.getString("INITIALIZING_TOOLS"));
+	      lg.log( messages.getString("INITIALIZING_TOOLS") );
 	      Toolset toolset = new Toolset(build, launcher, settings);
 	      // add architecture for compiler
 	      toolset.setArchitecture(arch);
-	      listener.getLogger().println("[wix] " +messages.getString("STARTING_COMPILE_PROCESS"));
+	      lg.log( messages.getString("STARTING_COMPILE_PROCESS") );
 	      FilePath objFile = toolset.compile(sources);
 	      
 	      if (settings.get(Wix.COMPILE_ONLY, false)) {
-	          listener.getLogger().println("[wix] " +messages.getString("SKIPPING_LINK"));
+	          lg.log( messages.getString("SKIPPING_LINK") );
 	      } else {
 	          String output = settings.get(Wix.MSI_PKG, Wix.MSI_PKG_DEFAULT_NAME);
 	          output = envVars.expand(output);
 	          FilePath outFile = new FilePath(workspace, output);
-	          listener.getLogger().println("[wix] " + java.text.MessageFormat.format(java.util.ResourceBundle.getBundle("Messages").getString("LINKING_TO"), new Object[] {outFile}));
+	          lg.log( java.text.MessageFormat.format(java.util.ResourceBundle.getBundle("Messages").getString("LINKING_TO"), new Object[] {outFile}));
 	          toolset.link(objFile, outFile);
 	      }
 	      
 	      build.setResult(Result.SUCCESS);
 	      performedSuccessful = true;
         } catch (ToolsetException e) {
-        	lg.severe(e);
+        	lg.log(e.getMessage());
             build.setResult(settings.get(Wix.MARK_UNSTABLE, false) ? Result.UNSTABLE : Result.FAILURE);
             performedSuccessful = true;
         } catch (NullPointerException e) {
         	lg.severe(e);
             build.setResult(settings.get(Wix.MARK_UNSTABLE, false) ? Result.UNSTABLE : Result.FAILURE);
-            performedSuccessful = true;
+            performedSuccessful = false;
         } catch (IOException e) {
         	lg.severe(e);
             build.setResult(settings.get(Wix.MARK_UNSTABLE, false) ? Result.UNSTABLE : Result.FAILURE);
