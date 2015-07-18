@@ -150,15 +150,8 @@ public abstract class WixCommand {
                 if (isEnvVarRejected(varName, value)) {
                     lg.debug("Rejected Environment variable: " + varName);
                 } else {
-                	if ( StringUtils.isNotEmpty(value) ) {
-	                    value = value.replace("\"", "\\\"");
-	                    // Bugfix: - add a second backslash
-	                    // fix for accidently quoted double quotes resulting in an
-	                    // appended backslash in a value 
-	                    char lastChar = value.charAt(value.length() - 1);
-	                    if (lastChar == '\\') { value += "\\"; }
-                	}
-                    
+                	// cleanUpValue removes some accidental signs
+                	value = cleanUpValue(value);
                     addParameter(varName, value); 
                 }
             }
@@ -166,6 +159,26 @@ public abstract class WixCommand {
             lg.log("Environment variables are not automatically added as parameters.");
         }
     }
+    
+    /**
+     * Remove or replace signs in value which can cause process execution to fail.
+     * @param value
+     * @return
+     */
+	private String cleanUpValue(String value) {
+		if ( StringUtils.isNotEmpty(value) ) {
+		    value = value.replace("\"", "\\\"");
+		    // Bugfix:
+		    // We have to remove the last backslash otherwise it could
+		    // happen we get masked quotation marks which will fail the
+		    // process execution.
+		    char lastChar = value.charAt(value.length() - 1);
+		    if (lastChar == '\\') {
+		    	value = value.substring(0, value.length() - 1);
+		    }
+		}
+		return value;
+	}
     
     protected void addWorkspace(FilePath workspace) {
     	this.workspace = workspace;
