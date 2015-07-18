@@ -18,4 +18,10 @@ If you would like to see new features or found a bug, you can use several ways t
 
 Feedback
 --------
-If you like the plugin you can leave me a message at _rollin dot hand at gmx dot de_.
+If you want to honour my work leave me a message at _rollin dot hand at gmx dot de_ or make a donation at Paypal.
+<form action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_top">
+<input type="hidden" name="cmd" value="_s-xclick">
+<input type="hidden" name="hosted_button_id" value="45HKTF44CZX36">
+<input type="image" src="https://www.paypalobjects.com/de_DE/DE/i/btn/btn_donateCC_LG.gif" border="0" name="submit" alt="Jetzt einfach, schnell und sicher online bezahlen – mit PayPal.">
+<img alt="" border="0" src="https://www.paypalobjects.com/de_DE/i/scr/pixel.gif" width="1" height="1">
+</form>
