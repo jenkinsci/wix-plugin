@@ -8,7 +8,7 @@
 
   <!-- <groupId>de.berg.systeme.jenkins.wix</groupId>  -->
   <artifactId>wix</artifactId>
-  <version>1.12</version>
+  <version>1.13-SNAPSHOT</version>
   <name>WIX Toolset Plugin</name>
   <packaging>hpi</packaging>
   
@@ -40,7 +40,7 @@
   	<url>https://github.com/jenkinsci/wix-plugin</url>
   	<connection>scm:git:ssh://github.com/jenkinsci/wix-plugin.git</connection>
   	<developerConnection>scm:git:ssh://git@github.com/jenkinsci/wix-plugin.git</developerConnection>
-    <tag>wix-1.12</tag>
+    <tag>wix-1.10</tag>
   </scm>
   <description>Builder for MSI packages depending on the Windows Installer XML toolset.</description>
   <organization>
