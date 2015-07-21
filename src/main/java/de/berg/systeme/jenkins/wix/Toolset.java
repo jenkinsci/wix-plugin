@@ -88,11 +88,16 @@ public final class Toolset {
      * @param fext extension to replace (starting with .dot).
      * @param fext_new new extension (starting with .dot).
      * @return new FilePath.
+     * @throws ToolsetException 
      */
-    private FilePath replaceExtension(FilePath input, String fext, String fext_new) {
-        String filename = input.getRemote();
-        filename = filename.replace(fext, fext_new);
-        return new FilePath(new File(filename));
+    private FilePath replaceExtension(FilePath input, String fext, String fext_new) throws ToolsetException {
+    	if (input == null) {
+    		throw new ToolsetException(messages.getString("NO_INPUT_FILE"));
+    	} else {
+    		String filename = input.getRemote();
+            filename = filename.replace(fext, fext_new);
+            return new FilePath(new File(filename));
+    	}
     }
     
     /**
@@ -139,8 +144,12 @@ public final class Toolset {
      */
     public FilePath compile(FilePath[] input) throws Exception, ToolsetException {
         // we use the first input name for the output file name
-        FilePath output = replaceExtension(input[0], ".wxs", ".wixobj");
-        return compile(input, output);
+    	if (input.length == 0) {
+    		throw new ToolsetException(messages.getString("NO_INPUT_FILE"));
+    	} else {
+    		FilePath output = replaceExtension(input[0], ".wxs", ".wixobj");
+    		return compile(input, output);
+    	}
     }
     
     /**
@@ -195,8 +204,12 @@ public final class Toolset {
      * @throws ToolsetException 
      */
     public FilePath link(FilePath[] input) throws Exception, ToolsetException {
-        FilePath output = replaceExtension(input[0], ".wixobj", ".msi");
-        return link(input, output);
+    	if (input.length == 0) {
+    		throw new ToolsetException(messages.getString("NO_INPUT_FILE"));
+    	} else {
+    		FilePath output = replaceExtension(input[0], ".wixobj", ".msi");
+    		return link(input, output);
+    	}
     }
     
     /**
