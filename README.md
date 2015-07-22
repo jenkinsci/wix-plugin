@@ -19,3 +19,6 @@ If you would like to see new features or found a bug, you can use several ways t
 Feedback
 --------
 If you want to honour my work leave me a message at _rollin dot hand at gmx dot de_ or make a [donation at Paypal] (https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=NAMLAKGAJTVKJ).
+
+
+[![Build Status](https://jenkins.ci.cloudbees.com/buildStatus/icon?job=plugins/wix-plugin)](https://jenkins.ci.cloudbees.com/job/plugins/job/wix-plugin/)
