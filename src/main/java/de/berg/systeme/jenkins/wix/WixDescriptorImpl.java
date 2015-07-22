@@ -90,19 +90,23 @@ public final class WixDescriptorImpl extends BuildStepDescriptor<Builder> {
   }
 
   public FormValidation doCheckMsiOutput(@QueryParameter String value) throws IOException, ServletException {
-    if (value == null || value.length() == 0) {
-      return FormValidation.ok(MESSAGES.getString("USING_DEFAULT_SETUP_MSI"));
-    }
-    if (value.contains("*")) {
-      return FormValidation.error("Patterns in output name are not allowed.");
-    }
-    if (value.toLowerCase().endsWith(".exe")) {
-      return FormValidation.warning("You need the Bootstrapper Extension (BalExtension) to build an Executable.");
-    }
-    if (!value.toLowerCase().endsWith(".msi")) {
-      return FormValidation.warning(MESSAGES.getString("NOT_A_VALID_PACKAGE_NAME"));
-    }
-    return FormValidation.ok();
+	if (value == null || value.length() == 0) {
+	  return FormValidation.ok(MESSAGES.getString("USING_DEFAULT_SETUP_MSI"));
+	}
+	if (value.contains("*")) {
+	  return FormValidation.error(MESSAGES.getString("NO_PATTERNS"));
+	}
+	if (!value.toLowerCase().matches(".*[\\.exe|\\.msi|\\.msm]{4,4}$")) {
+		return FormValidation.warning(MESSAGES.getString("PROVIDE_FILE_ENDING"));
+	}
+	if (value.toLowerCase().endsWith(".exe")) {
+	  return FormValidation.warning(MESSAGES.getString("BALEXT_NEEDED"));
+	}
+	if (!value.toLowerCase().endsWith(".msi") && 
+		!value.toLowerCase().endsWith(".msm")) {
+	  return FormValidation.warning(MESSAGES.getString("NOT_A_VALID_PACKAGE_NAME"));
+	}
+	return FormValidation.ok();
   }
 
   public FormValidation doCheckInstPath(@QueryParameter String value) throws IOException, ServletException {
