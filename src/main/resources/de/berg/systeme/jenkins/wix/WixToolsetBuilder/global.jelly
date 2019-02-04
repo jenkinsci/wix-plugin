@@ -15,20 +15,20 @@
     <f:entry title="${%InstallationPath}" field="instPath" description="${%InstallationPathDesc}">
       <f:textbox />
     </f:entry>
-	<f:block>
-	    <f:entry title="${%usedOnSlave}" field="usedOnSlave">
-	      	<f:checkbox />
-	    </f:entry>
-	    <f:entry title="${%enableDbgMsg}" field="enableDebug">
-      		<f:checkbox />
-    	</f:entry>
+    <f:block>
+      <f:entry field="usedOnSlave">
+        <f:checkbox title="${%usedOnSlave}"/>
+      </f:entry>
+      <f:entry field="enableDebug">
+        <f:checkbox title="${%enableDbgMsg}"/>
+      </f:entry>
     </f:block>
     <f:block>
-        <f:optionalBlock name="enableVars" field="enableVars" title="${%enableVars}">
-          <f:entry title="${%rejectVars}" field="rejectedVarsList">
-            <f:textbox name="rejectedVarsList" />
-          </f:entry>
-        </f:optionalBlock>
+      <f:optionalBlock name="enableVars" field="enableVars" title="${%enableVars}">
+        <f:entry title="${%rejectVars}" field="rejectedVarsList">
+          <f:textbox name="rejectedVarsList" />
+        </f:entry>
+      </f:optionalBlock>
     </f:block>
   </f:section>
 </j:jelly>
