@@ -15,13 +15,9 @@
     <f:entry title="${%InstallationPath}" field="instPath" description="${%InstallationPathDesc}">
       <f:textbox />
     </f:entry>
-	<f:block>
-	    <f:entry title="${%usedOnSlave}" field="usedOnSlave">
-	      	<f:checkbox />
-	    </f:entry>
-	    <f:entry title="${%enableDbgMsg}" field="enableDebug">
-      		<f:checkbox />
-    	</f:entry>
+    <f:block>
+        <f:optionalBlock title="${%usedOnSlave}" field="usedOnSlave" />
+        <f:optionalBlock title="${%enableDbgMsg}" field="enableDebug" />
     </f:block>
     <f:block>
         <f:optionalBlock name="enableVars" field="enableVars" title="${%enableVars}">

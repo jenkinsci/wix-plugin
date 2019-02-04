@@ -4,11 +4,11 @@
 
     See global.jelly for a general discussion about jelly script.
   -->
-  
+
   <f:entry title="${%Sources}" field="sources">
     <f:textbox />
   </f:entry>
-   
+
   <f:section title="${%Advanced Project Options}">
   <f:advanced>
     <f:entry title="${%OutputMSI}" field="msiOutput">
@@ -16,62 +16,26 @@
     </f:entry>
     <f:entry field="arch" title="${%Architecture}">
         <f:select />
-    </f:entry> 
-    <!-- @todo: Refactor here with next release --> 
-    <f:entry field="markAsUnstable">
-    <f:checkbox />${%MarkAsUnstable}
-  </f:entry>
-  <f:entry field="compileOnly">
-    <f:checkbox />${%compileOnly}
-  </f:entry>
-  <f:entry field="useUiExt">
-    <f:checkbox />${%useUiExt}
-  </f:entry>
-  <f:entry field="useUtilExt">
-    <f:checkbox />${%useUtilExt}
-  </f:entry>
-  <f:entry field="useBalExt">
-    <f:checkbox />${%useBalExt}
-  </f:entry>
-  <f:entry field="useComPlusExt">
-    <f:checkbox />${%useComPlusExt}
-  </f:entry>
-  <f:entry field="useDependencyExt">
-    <f:checkbox />${%useDependencyExt}
-  </f:entry>
-  <f:entry field="useDifxAppExt">
-    <f:checkbox />${%useDifxAppExt}
-  </f:entry>
-  <f:entry field="useDirectXExt">
-    <f:checkbox />${%useDirectXExt}
-  </f:entry>
-  <f:entry field="useFirewallExt">
-    <f:checkbox />${%useFirewallExt}
-  </f:entry>
-  <f:entry field="useGamingExt">
-    <f:checkbox />${%useGamingExt}
-  </f:entry>
-  <f:entry field="useIISExt">
-    <f:checkbox />${%useIISExt}
-  </f:entry>
-  <f:entry field="useMsmqExt">
-    <f:checkbox />${%useMsmqExt}
-  </f:entry>
-  <f:entry field="useNetfxExt">
-    <f:checkbox />${%useNetfxExt}
-  </f:entry>
-  <f:entry field="usePsExt">
-    <f:checkbox />${%usePsExt}
-  </f:entry>
-  <f:entry field="useSqlExt">
-    <f:checkbox />${%useSqlExt}
-  </f:entry>
-  <f:entry field="useTagExt">
-    <f:checkbox />${%useTagExt}
-  </f:entry>
-  <f:entry field="useVsExt">
-    <f:checkbox />${%useVsExt}
-  </f:entry>                    
+    </f:entry>
+    <!-- @todo: Refactor here with next release -->
+    <f:optionalBlock field="markAsUnstable" title="${%MarkAsUnstable}" />
+    <f:optionalBlock field="compileOnly" title="${%compileOnly}" />
+    <f:optionalBlock field="useUiExt" title="${%useUiExt}" />
+    <f:optionalBlock field="useUtilExt" title="${%useUtilExt}" />
+    <f:optionalBlock field="useBalExt" title="${%useBalExt}" />
+    <f:optionalBlock field="useComPlusExt" title="${%useComPlusExt}" />
+    <f:optionalBlock field="useDependencyExt" title="${%useDependencyExt}" />
+    <f:optionalBlock field="useDifxAppExt" title="${%useDifxAppExt}" />
+    <f:optionalBlock field="useDirectXExt" title="${%useDirectXExt}" />
+    <f:optionalBlock field="useFirewallExt title="${%useFirewallExt}" />
+    <f:optionalBlock field="useGamingExt title="${%useGamingExt}" />
+    <f:optionalBlock field="useIISExt" title="${%useIISExt}" />
+    <f:optionalBlock field="useMsmqExt" title="${%useMsmqExt}" />
+    <f:optionalBlock field="useNetfxExt" title="${%useNetfxExt}" />
+    <f:optionalBlock field="usePsExt" title="${%usePsExt}" />
+    <f:optionalBlock field="useSqlExt" title="${%useSqlExt}" />
+    <f:optionalBlock field="useTagExt" title="${%useTagExt}" />
+    <f:optionalBlock field="useVsExt" title="${%useVsExt}" />
   </f:advanced>
   </f:section>
 </j:jelly>
