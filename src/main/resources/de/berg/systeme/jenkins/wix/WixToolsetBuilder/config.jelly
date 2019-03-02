@@ -4,74 +4,74 @@
 
     See global.jelly for a general discussion about jelly script.
   -->
-  
+
   <f:entry title="${%Sources}" field="sources">
     <f:textbox />
   </f:entry>
-   
+
   <f:section title="${%Advanced Project Options}">
-  <f:advanced>
-    <f:entry title="${%OutputMSI}" field="msiOutput">
-        <f:textbox />
-    </f:entry>
-    <f:entry field="arch" title="${%Architecture}">
-        <f:select />
-    </f:entry> 
-    <!-- @todo: Refactor here with next release --> 
-    <f:entry field="markAsUnstable">
-    <f:checkbox />${%MarkAsUnstable}
-  </f:entry>
-  <f:entry field="compileOnly">
-    <f:checkbox />${%compileOnly}
-  </f:entry>
-  <f:entry field="useUiExt">
-    <f:checkbox />${%useUiExt}
-  </f:entry>
-  <f:entry field="useUtilExt">
-    <f:checkbox />${%useUtilExt}
-  </f:entry>
-  <f:entry field="useBalExt">
-    <f:checkbox />${%useBalExt}
-  </f:entry>
-  <f:entry field="useComPlusExt">
-    <f:checkbox />${%useComPlusExt}
-  </f:entry>
-  <f:entry field="useDependencyExt">
-    <f:checkbox />${%useDependencyExt}
-  </f:entry>
-  <f:entry field="useDifxAppExt">
-    <f:checkbox />${%useDifxAppExt}
-  </f:entry>
-  <f:entry field="useDirectXExt">
-    <f:checkbox />${%useDirectXExt}
-  </f:entry>
-  <f:entry field="useFirewallExt">
-    <f:checkbox />${%useFirewallExt}
-  </f:entry>
-  <f:entry field="useGamingExt">
-    <f:checkbox />${%useGamingExt}
-  </f:entry>
-  <f:entry field="useIISExt">
-    <f:checkbox />${%useIISExt}
-  </f:entry>
-  <f:entry field="useMsmqExt">
-    <f:checkbox />${%useMsmqExt}
-  </f:entry>
-  <f:entry field="useNetfxExt">
-    <f:checkbox />${%useNetfxExt}
-  </f:entry>
-  <f:entry field="usePsExt">
-    <f:checkbox />${%usePsExt}
-  </f:entry>
-  <f:entry field="useSqlExt">
-    <f:checkbox />${%useSqlExt}
-  </f:entry>
-  <f:entry field="useTagExt">
-    <f:checkbox />${%useTagExt}
-  </f:entry>
-  <f:entry field="useVsExt">
-    <f:checkbox />${%useVsExt}
-  </f:entry>                    
-  </f:advanced>
+    <f:advanced>
+      <f:entry title="${%OutputMSI}" field="msiOutput">
+          <f:textbox />
+      </f:entry>
+      <f:entry field="arch" title="${%Architecture}">
+          <f:select />
+      </f:entry>
+      <!-- @todo: Refactor here with next release -->
+      <f:entry field="markAsUnstable">
+        <f:checkbox title="${%MarkAsUnstable}" />
+      </f:entry>
+      <f:entry field="compileOnly">
+        <f:checkbox title="${%compileOnly}" />
+      </f:entry>
+      <f:entry field="useUiExt">
+        <f:checkbox title="${%useUiExt}" />
+      </f:entry>
+      <f:entry field="useUtilExt">
+        <f:checkbox title="${%useUtilExt}" />
+      </f:entry>
+      <f:entry field="useBalExt">
+        <f:checkbox title="${%useBalExt}" />
+      </f:entry>
+      <f:entry field="useComPlusExt">
+        <f:checkbox title="${%useComPlusExt}" />
+      </f:entry>
+      <f:entry field="useDependencyExt">
+        <f:checkbox title="${%useDependencyExt}" />
+      </f:entry>
+      <f:entry field="useDifxAppExt">
+        <f:checkbox title="${%useDifxAppExt}" />
+      </f:entry>
+      <f:entry field="useDirectXExt">
+        <f:checkbox title="${%useDirectXExt}" />
+      </f:entry>
+      <f:entry field="useFirewallExt">
+        <f:checkbox title="${%useFirewallExt}" />
+      </f:entry>
+      <f:entry field="useGamingExt">
+        <f:checkbox title="${%useGamingExt}" />
+      </f:entry>
+      <f:entry field="useIISExt">
+        <f:checkbox title="${%useIISExt}" />
+      </f:entry>
+      <f:entry field="useMsmqExt">
+        <f:checkbox title="${%useMsmqExt}" />
+      </f:entry>
+      <f:entry field="useNetfxExt">
+        <f:checkbox title="${%useNetfxExt}" />
+      </f:entry>
+      <f:entry field="usePsExt">
+        <f:checkbox title="${%usePsExt}" />
+      </f:entry>
+      <f:entry field="useSqlExt">
+        <f:checkbox title="${%useSqlExt}" />
+      </f:entry>
+      <f:entry field="useTagExt">
+        <f:checkbox title="${%useTagExt}" />
+      </f:entry>
+      <f:entry field="useVsExt">
+        <f:checkbox title="${%useVsExt}" />
+      </f:entry>
+    </f:advanced>
   </f:section>
 </j:jelly>
